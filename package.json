@@ -1,0 +1,37 @@
+{
+  "name": "Pizzaria-do-bosque-backend",
+  "version": "1.0.0",
+  "description": "Servidor dedicado para a pizzaria do bosque",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "nodemon --inspect --watch \"src/\" --exec \"ts-node src/main.ts\" -e ts",
+    "build": "tsc",
+    "prod": "npm run build && node dist/main.js",
+    "test": "lab \"test/\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/boom": "^8.0.1",
+    "@hapi/hapi": "^18.4.0",
+    "@hapi/inert": "^5.2.2",
+    "@hapi/joi": "^16.1.8",
+    "@hapi/lab": "^21.0.0",
+    "@hapi/vision": "^5.5.4",
+    "chalk": "^3.0.0",
+    "nodemon": "^2.0.1",
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.3"
+  },
+  "devDependencies": {
+    "@types/hapi__hapi": "^18.2.6",
+    "@types/hapi__inert": "^5.2.0",
+    "@types/hapi__joi": "^16.0.4",
+    "@types/hapi__vision": "^5.5.1",
+    "@types/node": "^12.12.17",
+    "@types/hapi": "^18.0.3",
+    "@types/hapi__boom": "^7.4.1",
+    "hapi-swagger": "^11.1.0"
+  }
+}
