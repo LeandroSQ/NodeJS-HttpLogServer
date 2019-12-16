@@ -1,5 +1,5 @@
 import ServerInjectable from "../model/ServerInjectable";
-import Logger from "../utils/logger";
+import Logger from "../utils/Logger";
 import { Server } from "@hapi/hapi";
 import * as FileSystem from "fs";
 import * as Path from "path";
@@ -48,7 +48,7 @@ class PluginInjector implements ServerInjectable {
                 var file = files[i];
                 var fileStatus = FileSystem.statSync (`${folder}${file}`);
                 
-                if (file == "injector.ts" || file == "injector.js") continue;
+                if (file == "Injector.ts" || file == "Injector.js") continue;
 
                 // Check file availability
                 if (!fileStatus) {
@@ -77,7 +77,7 @@ class PluginInjector implements ServerInjectable {
                                 this.pluginList.push(module);
                             }
 
-                            Logger.server (`Found route '${Chalk.yellow(file)}'`);
+                            Logger.server (`Found plugin '${Chalk.magenta(file)}'`);
                         } catch (e) {
                             Logger.exception(`Unable to import route(s) from file '${Chalk.yellow(filename)}'`, e);
                         }

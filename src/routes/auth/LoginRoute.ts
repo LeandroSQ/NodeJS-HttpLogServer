@@ -1,6 +1,6 @@
 import { ServerRoute } from "@hapi/hapi";
 import * as Joi from "@hapi/joi";
-import Logger from "../../utils/logger";
+import Logger from "../../utils/Logger";
 
 module.exports = [
     {

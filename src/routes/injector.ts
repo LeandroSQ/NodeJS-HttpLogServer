@@ -1,5 +1,5 @@
 import { ServerRoute, Server } from "@hapi/hapi";
-import Logger from "../utils/logger";
+import Logger from "../utils/Logger";
 import ServerInjectable from "../model/ServerInjectable";
 import * as FileSystem from "fs";
 import * as Path from "path";
@@ -30,7 +30,7 @@ class RouteInjector implements ServerInjectable {
                 var file = files[i];
                 var fileStatus = FileSystem.statSync (`${folder}${file}`);
                 
-                if (file == "injector.ts" || file == "injector.js") continue;
+                if (file == "Injector.ts" || file == "Injector.js") continue;
 
                 // Check file availability
                 if (!fileStatus) {

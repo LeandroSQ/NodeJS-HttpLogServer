@@ -1,4 +1,4 @@
-import Logger from "../utils/logger";
+import Logger from "../utils/Logger";
 
 // Define the delegate
 export type DisposeCallback = () => void;

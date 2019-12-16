@@ -1,4 +1,4 @@
-Promise.prototype.sequentially = function (chain) {
+Promise.prototype["sequentially"] = function (chain) {
     var results = [];
     var entries = chain;
     if (entries.entries) entries = entries.entries();
