@@ -1,4 +1,5 @@
-import Logger from "../utils/Logger";
+import Logger from "../utils/logger";
+import Chalk from "chalk";
 
 // Define the delegate
 export type DisposeCallback = () => void;
@@ -38,13 +39,13 @@ export class ProcessShutdownController {
         if (this.disposed) return;
         else this.disposed = true;
 
-        Logger.server(`Disposing server due ${event}...`);
+        Logger.log("server", `Disposing server due '${event}'...`)
 
         try {            
             // Runs the dispose callback function (If previously provided)
             if (this.disposeCallback) this.disposeCallback();
         } catch (e) {
-            Logger.exception("Unable to run the callback!", e);
+            Logger.log(["error", "server"], "Unable to run the callback!", e);
         }
     }
 

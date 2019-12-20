@@ -1,5 +1,5 @@
-import ServerInjectable from "../model/ServerInjectable";
-import Logger from "../utils/Logger";
+import ServerInjectable from "../model/server-injectable";
+import Logger from "../utils/logger";
 import { Server } from "@hapi/hapi";
 import * as FileSystem from "fs";
 import * as Path from "path";
@@ -16,7 +16,7 @@ class PluginInjector implements ServerInjectable {
 
     /* This method will be called whenever the server gets created */
     async onServerCreated(server: Server) {
-        Logger.server(`Injecting ${this.pluginList.length} plugins...`);
+        Logger.log(["server", "plugin"], `Injecting "${this.pluginList.length} plugins"...`);
 
         await server.register(this.pluginList);
     }
@@ -28,7 +28,7 @@ class PluginInjector implements ServerInjectable {
 
     /* This method will be called whenever the server is disposed, being due an error or not */
     async onServerDisposed(server: Server) {
-        Logger.server("Disposing plugins...");
+        Logger.log(["server", "plugin"], "Disposing plugins...");
     }
 
      /***
@@ -48,11 +48,11 @@ class PluginInjector implements ServerInjectable {
                 var file = files[i];
                 var fileStatus = FileSystem.statSync (`${folder}${file}`);
                 
-                if (file == "Injector.ts" || file == "Injector.js") continue;
+                if (file == "injector.ts" || file == "Injector.js") continue;
 
                 // Check file availability
                 if (!fileStatus) {
-                    return Logger.error (`Error getting file '${Chalk.yellow(file)}' status.`);
+                    return Logger.log (["error", "plugin"], `Error getting file '${file}' status.`);
                 }
 
                 // If is a directory, analyzes it's children
@@ -77,16 +77,16 @@ class PluginInjector implements ServerInjectable {
                                 this.pluginList.push(module);
                             }
 
-                            Logger.server (`Found plugin '${Chalk.magenta(file)}'`);
+                            Logger.log (["server", "plugin"], `Found plugin group '${file}'`);
                         } catch (e) {
-                            Logger.exception(`Unable to import route(s) from file '${Chalk.yellow(filename)}'`, e);
+                            Logger.log(["error", "plugin"], `Unable to import route(s) from file '${filename}'`, e);
                         }
                     }
                 }
             }
             
         } catch (e) {
-            Logger.exception("Unable to list routes on the 'routes' directory!", e);
+            Logger.log(["error", "plugin"], "Unable to list routes on the 'routes' directory!", e);
         }
     }
 

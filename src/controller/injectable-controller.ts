@@ -1,5 +1,5 @@
 import { Server } from '@hapi/hapi';
-import ServerInjectable from "../model/ServerInjectable";
+import ServerInjectable from "../model/server-injectable";
 
 export default class ServerInjectableController {
 

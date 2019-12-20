@@ -2,9 +2,9 @@
 import * as Hapi from "@hapi/hapi";
 import * as Boom from '@hapi/boom';
 import * as Configuration from "../config.json";
-import ServerInjectableController from "./InjectableController";
-import { ProcessShutdownController } from './ProcessShutdownController';
-import Logger from "../utils/Logger";
+import ServerInjectableController from "./injectable-controller";
+import { ProcessShutdownController } from './process-shutdown-controller';
+import Logger from "../utils/logger";
 import Chalk from 'chalk';
 
 export default class ServerController {
@@ -37,6 +37,7 @@ export default class ServerController {
         // Inject items
         this.injectableController.inject(require("./../plugins/injector"));// Inject the plugins
         this.injectableController.inject(require("./../routes/injector"));// Inject the routes
+        this.injectableController.inject(require("./../injectables/auth-injectable"));// Inject the token manager
     }
 
     private async setupControllers() {
@@ -56,8 +57,6 @@ export default class ServerController {
 
             // Notify injectables that the server has been created
             await this.injectableController.notifyServerCreated(this.hapiServer);
-
-            await this.setupBearerToken();
         
             // Starts the server
             await this.hapiServer.start();
@@ -67,7 +66,7 @@ export default class ServerController {
 
             await this.onInit();
 
-            Logger.server(`Server running on ${Chalk.yellow(this.hapiServer.info.uri)}`);
+            Logger.log("server", `Server running on '${this.hapiServer.info.uri}'!`);
             resolve("Server started successfully");
         });        
     }
@@ -87,27 +86,6 @@ export default class ServerController {
         return await this.hapiServer.inject(options);
     }
 
-    private setupBearerToken(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.hapiServer.auth.strategy("simple", "bearer-access-token", {
-                allowQueryToken: true,
-                accessTokenName: "token",
-                validate: async (request, token, h) => {
-                    // here is where you validate your token
-                    // comparing with token from your database for example
-                    const isValid = token === "1234";
-        
-                    const credentials = { token };
-                    const artifacts = { test: "info" };
-        
-                    return { isValid, credentials, artifacts };
-                }
-            });
-        
-            this.hapiServer.auth.default("simple");
-        });
-    }
-
     //#region Event callback definition
     /* Event: called on the server has been initialized */
     private onInit() {
@@ -121,11 +99,11 @@ export default class ServerController {
         return new Promise((resolve, reject) => {
             if (Configuration.mode === 'prod') {// NODE_ENV could also be applied here
                 // In production, log a limited error message and throw the default Bad Request error.
-                Logger.exception('ValidationError:', error.message);
+                Logger.log("error", "Validation error: " + error.message);
                 throw Boom.badRequest(`Invalid request payload input`);
             } else {
                 // During development, log and respond with the full error.
-                Logger.exception("Error!", error);
+                Logger.log("error", "Error!", error);
                 throw error;
             }
         });
@@ -136,7 +114,7 @@ export default class ServerController {
         return new Promise((resolve, reject) => {
             // Check if the server was created
             if (this.hapiServer == null) {
-                Logger.error("Unable to stop the server, the server wasn't created!");
+                Logger.log(["error", "server"], "Unable to stop the server, the server wasn't created!");
                 reject("Server wasn't created");
                 return;                
             }
@@ -147,11 +125,11 @@ export default class ServerController {
             // Tries to stop the server
             this.hapiServer.stop()
                 .then(() => { 
-                    Logger.server("Server fully stopped!");
+                    Logger.log("server", "Server fully stopped!");
                     resolve();
                 })
                 .catch(error => {
-                    Logger.exception("Unable to stop the server!", error);
+                    Logger.log(["error", "server"], "Unable to stop the server!", error);
                     reject(error);
                 });
         });

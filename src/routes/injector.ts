@@ -1,6 +1,6 @@
 import { ServerRoute, Server } from "@hapi/hapi";
-import Logger from "../utils/Logger";
-import ServerInjectable from "../model/ServerInjectable";
+import Logger from "../utils/logger";
+import ServerInjectable from "../model/server-injectable";
 import * as FileSystem from "fs";
 import * as Path from "path";
 import Chalk from "chalk";
@@ -30,11 +30,11 @@ class RouteInjector implements ServerInjectable {
                 var file = files[i];
                 var fileStatus = FileSystem.statSync (`${folder}${file}`);
                 
-                if (file == "Injector.ts" || file == "Injector.js") continue;
+                if (file == "injector.ts" || file == "Injector.js") continue;
 
                 // Check file availability
                 if (!fileStatus) {
-                    return Logger.error (`Error getting file '${Chalk.yellow(file)}' status.`);
+                    return Logger.log (["error", "route"], `Error getting file '${file}' status.`);
                 }
 
                 // If is a directory, analyzes it's children
@@ -59,22 +59,22 @@ class RouteInjector implements ServerInjectable {
                                 this.routeList.push(module);
                             }
 
-                            Logger.server (`Found route '${Chalk.yellow(file)}'`);
+                            Logger.log (["server", "route"], `Found route group '${file}'`);
                         } catch (e) {
-                            Logger.exception(`Unable to import route(s) from file '${Chalk.yellow(filename)}'`, e);
+                            Logger.log(["error", "route"], `Unable to import route(s) from file '${filename}'`, e);
                         }
                     }
                 }
             }
             
         } catch (e) {
-            Logger.exception("Unable to list routes on the 'routes' directory!", e);
+            Logger.log(["error", "route"], "Unable to list routes on the 'routes' directory!", e);
         }
     }
 
     /* This method will be called whenever the server gets created */
     async onServerCreated(server: Server) {
-        Logger.server(`Injecting ${this.routeList.length} routes...`);        
+        Logger.log(["server", "route"], `Injecting "${this.routeList.length} routes"...`);        
         server.route(this.routeList);
     }
 
@@ -85,7 +85,7 @@ class RouteInjector implements ServerInjectable {
 
     /* This method will be called whenever the server is disposed, being due an error or not */
     async onServerDisposed(server: Server) {
-        Logger.server("Disposing routes...");
+        Logger.log(["server", "route"], "Disposing routes...");
     }
 
 }

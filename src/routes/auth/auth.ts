@@ -1,9 +1,9 @@
 import { ServerRoute } from "@hapi/hapi";
 import * as Joi from "@hapi/joi";
-import Logger from "../../utils/Logger";
+import Logger from "../../utils/logger";
 
 module.exports = [
-    {
+ /*    {
         method: "POST",
         path: "/auth/login",
 
@@ -29,5 +29,5 @@ module.exports = [
                 name: `Hello ${(request.payload as any).username}!`   
             }
         }
-    }
+    }, */
 ] as ServerRoute[];

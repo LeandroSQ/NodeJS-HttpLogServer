@@ -20,6 +20,7 @@
     "@hapi/vision": "^5.5.4",
     "chalk": "^3.0.0",
     "hapi-auth-bearer-token": "^6.1.2",
+    "hapi-oauth2-server-plugin": "^0.4.0",
     "nodemon": "^2.0.1",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"

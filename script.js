@@ -47,3 +47,4 @@ function renameFiles(folder, recursionLevel = 0) {
     }
 }
   
+renameFiles("./src/");

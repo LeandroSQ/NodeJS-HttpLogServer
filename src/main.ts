@@ -1,5 +1,5 @@
 // Imports
-import Server from "./controller/ServerController";
+import Server from "./controller/server-controller";
 
 // Definitions
 const server = new Server ();
