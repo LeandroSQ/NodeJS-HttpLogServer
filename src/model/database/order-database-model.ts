@@ -17,8 +17,34 @@ export default class OrderDatabaseModel implements DatabaseInjectable {
                     }
                 },
                 method: {
-                    type: { type: String, enum: ["Master", "Visa", "VR", "Cash"] },
+                    type: { 
+                        type: String, 
+                        enum: [
+                            "Elo", 
+                            "Cash",
+                            "Visa", 
+                            "Hipercard", 
+                            "Mastercard", 
+                            "VR - Alelo", 
+                            "VR - Sodexo", 
+                            "VR - Ticket", 
+                            "American Express"
+                        ] 
+                    },
                     change: Number
+                },
+                status: {
+                    type: String,
+                    enum: [
+                        "ProcessamentoRequisitado", 
+                        "Processado", 
+                        "Confirmado", 
+                        "EmPreparo", 
+                        "EmTransporte", 
+                        "Entregue", 
+                        "NaoEntregue", 
+                        "Cancelado"
+                    ]
                 }
             }
         }, {

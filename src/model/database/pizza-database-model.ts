@@ -7,7 +7,8 @@ export default class PizzaDatabaseModel implements DatabaseInjectable {
         let schema = new Schema({
             size: { type: mongoose.Schema.Types.ObjectId, ref: "PizzaSize" },
             flavors: [{ type: mongoose.Schema.Types.ObjectId, ref: "PizzaFlavor" }],
-            complements: [{ type: mongoose.Schema.Types.ObjectId, ref: "PizzaComplement" }]            
+            complements: [{ type: mongoose.Schema.Types.ObjectId, ref: "PizzaComplement" }],
+            observations: String
         });
 
         schema.virtual("extraPrice")
