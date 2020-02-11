@@ -1,0 +1,76 @@
+Order:
+{
+    id: 0,
+    items: [
+		// Promotion
+		// Drinks
+    ],
+    customerId: 0,
+    price: 20.00,
+    discount: 30.00,
+}
+
+Customer:
+{
+    id: 0,
+    name: "João da Silva",
+    phone: "510000000", // Primary key
+    document: "aaaaa",// Optional (CPF/CNPJ)
+    delivery: {
+        address: "Rua joão da silva",
+        number: "1234",
+        district: "Morada do bosque",
+        complement: "Casa",// Optional
+        cep: "00000000"
+    }
+}
+
+Promotion: 
+{
+    id: 0,
+    items: [
+        Pizza | Drink
+    ],
+    discount: 30.00,
+    maxSliceCount: 2,
+    multipleTimesAllowed: false
+}
+
+PizzaSize:
+{
+	id: 0,
+	name: "Pizza pequena",
+    size: "25cm"
+}
+
+Pizza:
+{
+	id: 0,
+	sizeId: 0,
+    price: 20.00,
+    flavors: [],
+    complements: []
+}
+
+Flavor:
+{
+    id: 0,    
+    name: "4 Queijos",
+    ingredients: ["Cheddar", "Molho de tomate", "Mussarela"],
+    type: "Sweet" | "Traditional" | "Premium",
+    price: 0.00
+}
+
+Complement:
+{
+    id: 0,
+    name: "Borda com catupiry",
+    price: 10.00
+}
+
+Drink:
+{
+    id: 0,
+    name: "Coca-cola",
+    price: 10.00
+}

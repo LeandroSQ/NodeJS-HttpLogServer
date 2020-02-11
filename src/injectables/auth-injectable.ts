@@ -38,7 +38,6 @@ class AuthInjectable implements ServerInjectable {
     async onServerCreated(server: Server) {
         this.setupBearerTokenAuth(server);
     }
-
     
     /* This method will be called whenever the server gets started */
     async onServerStarted(server: Server) {

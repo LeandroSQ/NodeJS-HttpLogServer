@@ -1,0 +1,77 @@
+Order:
+{
+    id: 0,
+    items: [
+        Pizza | Drink | Promotion
+    ],
+    price: 20.00,
+    discount: 30.00,
+}
+
+Promotion: 
+{
+    id: 0,
+    items: [
+        Pizza | Drink
+    ],
+    discount: 30.00,
+    maxSliceCount: 2,
+    multipleTimesAllowed: false
+}
+
+Pizza:
+{
+    id: 0,
+    name: "Pizza pequena",
+    size: "25cm",
+    price: 20.00,
+    flavors: [],
+    complements: []
+},
+{
+    id: 1,
+    name: "Pizza média",
+    size: "30cm",
+    price: 34.90,
+    flavors: [],
+    complements: []
+},
+{
+    id: 2,
+    name: "Pizza grande",
+    size: "35cm",
+    price: 44.90,
+    flavors: [],
+    complements: []
+},
+{
+    id: 3,
+    name: "Pizza família",
+    size: "45cm",
+    price: 54.90,
+    flavors: [],
+    complements: []
+}
+
+Flavor:
+{
+    id: 0,    
+    name: "4 Queijos",
+    ingredients: ["Cheddar", "Molho de tomate", "Mussarela"],
+    type: "Sweet" | "Traditional" | "Premium",
+    price: 0.00
+}
+
+Complement:
+{
+    id: 0,
+    name: "Borda com catupiry",
+    price: 10.00
+}
+
+Drink:
+{
+    id: 0,
+    name: "Coca-cola",
+    price: 10.00
+}
