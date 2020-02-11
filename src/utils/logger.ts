@@ -28,8 +28,11 @@ export default class Logger {
             case "auth":
                 fn = chalk.cyan;
                 break;
-            case "debug": fn =
-                chalk.magenta;
+            case "database":
+                fn = chalk.magenta;
+                break;
+            case "debug": 
+                fn = chalk.bgMagenta;
                 break;
             case "info":
                 fn = chalk.gray;

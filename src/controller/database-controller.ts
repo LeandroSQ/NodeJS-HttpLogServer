@@ -1,22 +1,25 @@
-const DB_NAME = "pizzzaria-do-bosque";
 import * as FileSystem from "fs";
 import * as Path from "path";
 import Logger from "../utils/logger";
 import { Server } from '@hapi/hapi';
 import DatabaseInjectable from "../model/database-injectable";
-import * as Mongoose from "mongoose";
+import * as mongoose from "mongoose";
 
-export default class DatabaseController {
+/* Define constants */
+const DB_NAME = "pizzzaria-do-bosque";
+
+/* Define the controller */
+export class DatabaseController {
 
     private modelList: Array<DatabaseInjectable> = [];
-    private declaredList: Array<Mongoose.Model<any>> = [];
+    private declaredList: Array<mongoose.Model<any>> = [];
 
     constructor() {
         this.loadDatabaseModels(`${__dirname}/../model/database/`);
     }
 
     /***
-     * This method lists all the plugins on the 'plugins' folder
+     * This method lists all the models on the 'database' folder
      * and automatically saves them to further be registered
      * 
      * @param folder The folder to search for files
@@ -52,16 +55,20 @@ export default class DatabaseController {
                         try {
                             // Imports the file
                             let module = require(`${folder}${filename}`);
-
+                            if (module && module.default) {
+                                module = new module.default();
+                            }
+                            
                             if (Array.isArray(module)) {
                                 // If it is an array, concatenate both 
                                 this.modelList = this.modelList.concat(module);
                             } else {
                                 // Otherwise, simply import it
-                                this.modelList.push(module);
+                                this.modelList.push(module);                                
                             }
 
-                            Logger.log (["server", "server", "database"], `Found model group '${file}'`);
+                            let simplifiedName = file.substring(0, file.lastIndexOf("-database-model.ts"));
+                            Logger.log (["server", "server", "database"], `Found model group '${simplifiedName}'`);
                         } catch (e) {
                             Logger.log(["error", "server", "database"], `Unable to import model(s) from file '${filename}'`, e);
                         }
@@ -79,8 +86,11 @@ export default class DatabaseController {
      * 
      * @param injectable The provided injectable
      ***/
-    inject(injectable: DatabaseInjectable): void {
-        this.modelList.push(injectable);
+    inject(injectable: DatabaseInjectable | any): void {
+        if (injectable && injectable.default)
+            this.modelList.push(injectable.default);
+        else
+            this.modelList.push(injectable);
     }
 
     /***
@@ -89,15 +99,15 @@ export default class DatabaseController {
      * @param server The running server instance
      ***/
     notifyServerCreated(server: Server): Promise<any>{
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);
 
             try {
-                this.modelList.forEach(async databaseInjectable => {
-                    let object = await databaseInjectable.onInject(Mongoose);
-                    let model = Mongoose.model(object.name, object.schema);
+                for (const injectable of this.modelList) {
+                    let object = await injectable.onInject(mongoose);
+                    let model = mongoose.model(object.name, object.schema);
                     this.declaredList.push(model);
-                });
+                }
 
                 resolve();
             } catch (e) {

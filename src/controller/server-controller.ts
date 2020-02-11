@@ -1,3 +1,4 @@
+import { DatabaseController } from './database-controller';
 // Imports
 import * as Hapi from "@hapi/hapi";
 import * as Boom from '@hapi/boom';
@@ -22,12 +23,13 @@ export default class ServerController {
     // Define controller related stuff
     private processController: ProcessShutdownController = null
     private injectableController: ServerInjectableController = null
+    private databaseController: DatabaseController = null
 
     //#region Controller setup
     private async setupProcessController() {
         // Creates the controller instance
         this.processController = new ProcessShutdownController(this.onDispose);
-        this.processController.registerHooks();// Register all events on the running process instance
+        //this.processController.registerHooks();// Register all events on the running process instance
     }
 
     private async setupInjectableController() {
@@ -40,9 +42,15 @@ export default class ServerController {
         this.injectableController.inject(require("./../injectables/auth-injectable"));// Inject the token manager
     }
 
+    private async setupDatabaseController() {
+        // Creates the controller instance
+        this.databaseController = new DatabaseController();
+    }
+
     private async setupControllers() {
         await this.setupProcessController();
         await this.setupInjectableController();
+        await this.setupDatabaseController();
     }
     //#endregion
 
@@ -63,7 +71,9 @@ export default class ServerController {
 
             // Notify injectables that the server has been started
             await this.injectableController.notifyServerStarted(this.hapiServer);
+            await this.databaseController.notifyServerCreated(this.hapiServer);
 
+            Logger.log("server", `Initializing "server"...`);
             await this.onInit();
 
             Logger.log("server", `Server running on '${this.hapiServer.info.uri}'!`);
@@ -90,7 +100,7 @@ export default class ServerController {
     /* Event: called on the server has been initialized */
     private onInit() {
         return new Promise((resolve, reject) => {
-          
+            resolve();
         });
     }
 
@@ -121,6 +131,7 @@ export default class ServerController {
 
             // Notify all the injectables that the server is to be disposed
             this.injectableController.notifyServerDisposed(this.hapiServer);
+            this.databaseController.notifyServerDisposed(this.hapiServer);
 
             // Tries to stop the server
             this.hapiServer.stop()

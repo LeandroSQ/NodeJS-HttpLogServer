@@ -24,7 +24,7 @@ export default class CustomerDatabaseModel implements DatabaseInjectable {
             });
 
         return {
-            name: "Promotion",
+            name: "Customer",
             schema: schema
         };
     }
