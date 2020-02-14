@@ -44,7 +44,7 @@ export default class ServerController {
 
     private async setupDatabaseController() {
         // Creates the controller instance
-        this.databaseController = new DatabaseController();
+        this.databaseController = DatabaseController.instance;
     }
 
     private async setupControllers() {
@@ -65,13 +65,14 @@ export default class ServerController {
 
             // Notify injectables that the server has been created
             await this.injectableController.notifyServerCreated(this.hapiServer);
+            await this.databaseController.notifyServerCreated(this.hapiServer);
         
             // Starts the server
             await this.hapiServer.start();
 
             // Notify injectables that the server has been started
             await this.injectableController.notifyServerStarted(this.hapiServer);
-            await this.databaseController.notifyServerCreated(this.hapiServer);
+            await this.databaseController.notifyServerStarted(this.hapiServer);
 
             Logger.log("server", `Initializing "server"...`);
             await this.onInit();

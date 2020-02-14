@@ -28,5 +28,5 @@ export default class CustomerDatabaseModel implements DatabaseInjectable {
             schema: schema
         };
     }
-
+// "dev": "nodemon --watch \"src/\" --exec \"ts-node src/Main.ts\" -e ts",
 }

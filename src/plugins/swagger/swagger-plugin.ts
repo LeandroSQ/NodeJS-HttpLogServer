@@ -5,6 +5,8 @@ import * as Configuration from "../../config.json";
 import Hapi from "@hapi/hapi";
 
 const options: Swagger.RegisterOptions = {
+    documentationPath: "/api/swagger",
+    grouping: "tags",
     info: {
         title: "Test API Documentation",
         version: Configuration.version

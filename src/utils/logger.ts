@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { Request } from "@hapi/hapi";
 
 type Tag = {
     string: String,
@@ -77,6 +78,17 @@ export default class Logger {
             console.log(tagsText + " " + txt);
         }
 
+    }
+
+    public static route(request: Request) {
+        let color = {
+            "POST": chalk.green,
+            "GET": chalk.cyan,
+            "PUT": chalk.yellow,
+            "DELETE": chalk.red
+        }[request.method.toUpperCase()];
+
+        Logger.log(["server", "route"], `-> ${color('[' + request.method.toUpperCase() + ']')} ${chalk.gray(request.path)}`);
     }
 
     public static exception(description: string, exception: Error | any): void {

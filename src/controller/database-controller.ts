@@ -3,16 +3,29 @@ import * as Path from "path";
 import Logger from "../utils/logger";
 import { Server } from '@hapi/hapi';
 import DatabaseInjectable from "../model/database-injectable";
-import * as mongoose from "mongoose";
-
-/* Define constants */
-const DB_NAME = "pizzzaria-do-bosque";
+// import * as Mongoose from "mongoose";
+import Mongoose = require("mongoose");
+import * as Config from "../config.json";
 
 /* Define the controller */
 export class DatabaseController {
 
+    // Singleton pattern definition
+    private static _instance: DatabaseController = null;
+    //public static instance: DatabaseController
+    public static get instance(): DatabaseController {
+        if (DatabaseController._instance) {
+            return DatabaseController._instance;
+        } else {
+            DatabaseController._instance = new DatabaseController();
+            return DatabaseController._instance;
+        }
+    };
+
+
     private modelList: Array<DatabaseInjectable> = [];
-    private declaredList: Array<mongoose.Model<any>> = [];
+    public declaredList: any = {};
+    public mongoose: Mongoose.Connection;
 
     constructor() {
         this.loadDatabaseModels(`${__dirname}/../model/database/`);
@@ -68,7 +81,7 @@ export class DatabaseController {
                             }
 
                             let simplifiedName = file.substring(0, file.lastIndexOf("-database-model.ts"));
-                            Logger.log (["server", "server", "database"], `Found model group '${simplifiedName}'`);
+                            Logger.log (["server", "database"], `Found model group '${simplifiedName}'`);
                         } catch (e) {
                             Logger.log(["error", "server", "database"], `Unable to import model(s) from file '${filename}'`, e);
                         }
@@ -79,6 +92,34 @@ export class DatabaseController {
         } catch (e) {
             Logger.log(["error", "server", "database"], "Unable to list models on the 'database' directory!", e);
         }
+    }
+
+    private connectToDatabaseServer() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Connects to the server URL according to the environment
+                if (Config.mode === "prod") {
+                    await Mongoose.connect(`mongodb://${Config.database.user}:${Config.database.password}@${Config.database.host}/${Config.database.db_name}`, { useNewUrlParser: true, useUnifiedTopology: true });
+                } else {
+                    await Mongoose.connect(`mongodb://localhost:27017/${Config.database.db_name}`, { useNewUrlParser: true, useUnifiedTopology: true });
+                }         
+    
+                this.mongoose = Mongoose.connection;
+    
+                Logger.log(["server", "database"], `Connected with the database server! '${this.mongoose.host}'`)
+                
+                // Define the post-connection error handler
+                Mongoose.connection.on("error", e => {
+                    Logger.log(["error", "server", "database"], "The connection with the database server was lost!\n" + e);
+                });
+
+                resolve();
+            } catch(e) {
+                console.trace(e);
+                Logger.log(["error", "server", "database"], "Unable to connect with the database!\n" + e);
+                reject(e);
+            } 
+        });
     }
 
     /***
@@ -100,13 +141,13 @@ export class DatabaseController {
      ***/
     notifyServerCreated(server: Server): Promise<any>{
         return new Promise(async (resolve, reject) => {
-            Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);
+            Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);            
 
             try {
                 for (const injectable of this.modelList) {
-                    let object = await injectable.onInject(mongoose);
-                    let model = mongoose.model(object.name, object.schema);
-                    this.declaredList.push(model);
+                    let object = await injectable.onInject(Mongoose);
+                    let model = Mongoose.model(object.name, object.schema);
+                    this.declaredList[object.name] = model;
                 }
 
                 resolve();
@@ -124,8 +165,8 @@ export class DatabaseController {
      * 
      * @param server The running server instance
      ***/
-    notifyServerStarted(server: Server) {
-       
+    async notifyServerStarted(server: Server) {
+        await this.connectToDatabaseServer();
     }
 
     /***
@@ -134,8 +175,12 @@ export class DatabaseController {
      * @param server The disposed server instance
      ***/
     async notifyServerDisposed(server: Server) {
-        
+        try {
+            Logger.log(["server", "database"], "Disposing database controller...");
+
+            await Mongoose.disconnect();
+        } catch(e) {
+            Logger.log(["server", "database", "error"], "Unable to dispose database controller!\n" + e);
+        }
     }
-
-
 }
