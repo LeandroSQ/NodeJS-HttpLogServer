@@ -12,7 +12,7 @@ module.exports = [
         path: "/api/drink",
         options: {
             description: "Lists all drinks",
-            tags: ["api", "drink"],
+            tags: ["api", "Drink"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -24,7 +24,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
 
                 let drinks = await model.find({});
 
@@ -52,7 +52,7 @@ module.exports = [
         path: "/api/drink",
         options: {
             description: "Registers a drink",
-            tags: ["api", "drink"],
+            tags: ["api", "Drink"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -68,7 +68,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -95,7 +95,7 @@ module.exports = [
         options: {
             description: "Update drink info",
             notes: "Requires an valid id",
-            tags: ["api", "drink"],
+            tags: ["api", "Drink"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -114,7 +114,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -138,7 +138,7 @@ module.exports = [
         options: {
             description: "Delete a drink",
             notes: "Requires an valid id",
-            tags: ["api", "drink"],
+            tags: ["api", "Drink"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -153,7 +153,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 

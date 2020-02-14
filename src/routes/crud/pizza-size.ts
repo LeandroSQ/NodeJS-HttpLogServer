@@ -12,7 +12,7 @@ module.exports = [
         path: "/api/pizza-size",
         options: {
             description: "Lists all size",
-            tags: ["api", "pizza size"],
+            tags: ["api", "Pizza size"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -52,7 +52,7 @@ module.exports = [
         path: "/api/pizza-size",
         options: {
             description: "Registers a pizza size",
-            tags: ["api", "pizza size"],
+            tags: ["api", "Pizza size"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -95,7 +95,7 @@ module.exports = [
         options: {
             description: "Update pizza-size info",
             notes: "Requires an valid id",
-            tags: ["api", "pizza size"],
+            tags: ["api", "Pizza size"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -138,7 +138,7 @@ module.exports = [
         options: {
             description: "Delete a pizza-size",
             notes: "Requires an valid id",
-            tags: ["api", "pizza size"],
+            tags: ["api", "Pizza size"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()

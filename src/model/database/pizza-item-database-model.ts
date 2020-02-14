@@ -1,7 +1,7 @@
 import DatabaseInjectable from "../database-injectable";
 import { Schema } from "mongoose";
 
-export default class PizzaDatabaseModel implements DatabaseInjectable {
+export default class PizzaItemDatabaseModel implements DatabaseInjectable {
     
     async onInject(mongoose: typeof import("mongoose")): Promise<{ name: string, schema: Schema<any> }> {
         let schema = new Schema({
@@ -17,7 +17,7 @@ export default class PizzaDatabaseModel implements DatabaseInjectable {
             });
 
         return {
-            name: "Pizza",
+            name: "PizzaItem",
             schema: schema
         };
     }

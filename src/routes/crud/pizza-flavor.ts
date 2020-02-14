@@ -12,7 +12,7 @@ module.exports = [
         path: "/api/pizza-flavor",
         options: {
             description: "Lists all flavors",
-            tags: ["api", "pizza flavor"],
+            tags: ["api", "Pizza flavor"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -52,7 +52,7 @@ module.exports = [
         path: "/api/pizza-flavor",
         options: {
             description: "Registers a pizza flavor",
-            tags: ["api", "pizza flavor"],
+            tags: ["api", "Pizza flavor"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -97,7 +97,7 @@ module.exports = [
         options: {
             description: "Update pizza-flavor info",
             notes: "Requires an valid id",
-            tags: ["api", "pizza flavor"],
+            tags: ["api", "Pizza flavor"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -142,7 +142,7 @@ module.exports = [
         options: {
             description: "Delete a pizza-flavor",
             notes: "Requires an valid id",
-            tags: ["api", "pizza flavor"],
+            tags: ["api", "Pizza flavor"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()

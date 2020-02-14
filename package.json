@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Servidor dedicado para a pizzaria do bosque",
   "main": "src/main.ts",
-  "scripts": {    
+  "scripts": {
     "dev": "ts-node-dev --inspect --respawn --clear --exit-child --transpileOnly src/main.ts",
     "build": "tsc",
     "prod": "npm run build && node dist/Main.js",

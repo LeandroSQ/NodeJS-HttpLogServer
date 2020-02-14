@@ -9,10 +9,10 @@ import Logger from "../../utils/logger";
 module.exports = [
     {
         method: "GET",
-        path: "/api/pizza-complement",
+        path: "/api/promotion",
         options: {
-            description: "Lists all complements",
-            tags: ["api", "Pizza complement"],
+            description: "Lists all promotions",
+            tags: ["api", "Promotion"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -24,43 +24,46 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
 
-                let complements = await model.find({});
+                let promotions = await model.find({})
+                                            .populate("pizzas")
+                                            .populate("drinks");
 
-                if (complements) {
+                if (promotions) {
                     // If we've got a valid customer from the database
                     return {
                         message: "OK",
-                        complements: complements
+                        promotions: promotions
                     };
                 } else {
                     // If we haven't found any customer with that phone
                     return {
-                        message: "Couldn't find any pizza-complement on the database",
-                        complements: []
+                        message: "Couldn't find any pizza-promotion on the database",
+                        promotions: []
                     };
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to search pizza-complement on database!");
+                return Boom.internal("Unable to search pizza-promotion on database!");
             }
         }
     },
     {
         method: "POST",
-        path: "/api/pizza-complement",
+        path: "/api/pizza-promotion",
         options: {
-            description: "Registers a pizza-complement",
-            tags: ["api", "Pizza complement"],
+            description: "Registers a pizza-promotion",
+            tags: ["api", "Promotion"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
                 }).options({ allowUnknown: true }),
                 payload: Joi.object({
-                    name: Joi.string().min(3).max(255).required(),
-                    extraPrice: Joi.number().min(0).required()
-                }).label("PizzaComplement")
+                    pizzas: Joi.array().items(Joi.string().min(10).max(128)).required(),
+                    drinks: Joi.array().items(Joi.string().min(10).max(128)).required(),
+                    maxSliceCount: Joi.number().min(1).max(10).required()
+                }).label("PizzaPromotion")
             }
         },
         
@@ -68,7 +71,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -77,25 +80,25 @@ module.exports = [
                     // Everything is fine :)
                     return {
                         message: "OK",
-                        complement: document
+                        promotion: document
                     };
                 } else {
                     // In case of error
-                    return Boom.internal("Unable to insert pizza-complement on database!");
+                    return Boom.internal("Unable to insert pizza-promotion on database!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to insert pizza-complement on database!");
+                return Boom.internal("Unable to insert pizza-promotion on database!");
             }
         }
     },
     {
         method: "PUT",
-        path: "/api/pizza-complement/{id}",
+        path: "/api/pizza-promotion/{id}",
         options: {
-            description: "Update pizza-complement info",
+            description: "Update pizza-promotion info",
             notes: "Requires an valid id",
-            tags: ["api", "Pizza complement"],
+            tags: ["api", "Promotion"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -104,9 +107,10 @@ module.exports = [
                     id: Joi.string().min(10).max(128).required() 
                 }),
                 payload: Joi.object({
-                    name: Joi.string().min(3).max(255),
-                    extraPrice: Joi.number().min(0)
-                }).label("UpdatePizzaComplement")
+                    pizzas: Joi.array().items(Joi.string().min(10).max(128)),
+                    drinks: Joi.array().items(Joi.string().min(10).max(128)),
+                    maxSliceCount: Joi.number().min(1).max(10)
+                }).label("UpdatePizzaPromotion")
             }
         },
         
@@ -114,7 +118,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -123,22 +127,22 @@ module.exports = [
                         message: "OK"
                     } 
                 } else {
-                    return Boom.internal("Unable to update pizza-complement data!");
+                    return Boom.internal("Unable to update pizza-promotion data!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to update pizza-complement on database!");
+                return Boom.internal("Unable to update pizza-promotion on database!");
             } 
                 
         }
     },
     {
         method: "DELETE",
-        path: "/api/pizza-complement/{id}",
+        path: "/api/pizza-promotion/{id}",
         options: {
-            description: "Delete a complement",
+            description: "Delete a promotion",
             notes: "Requires an valid id",
-            tags: ["api", "Pizza complement"],
+            tags: ["api", "Promotion"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -153,7 +157,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 
@@ -162,11 +166,11 @@ module.exports = [
                         message: "OK"
                     } 
                 } else {
-                    return Boom.internal("Unable to delete pizza-complement!");
+                    return Boom.internal("Unable to delete pizza-promotion!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to delete pizza-complement on database!");
+                return Boom.internal("Unable to delete pizza-promotion on database!");
             }                 
         }
     }

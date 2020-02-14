@@ -9,10 +9,10 @@ import Logger from "../../utils/logger";
 module.exports = [
     {
         method: "GET",
-        path: "/api/pizza-complement",
+        path: "/api/order",
         options: {
-            description: "Lists all complements",
-            tags: ["api", "Pizza complement"],
+            description: "Lists all orders",
+            tags: ["api", "Order"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -24,35 +24,35 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
 
-                let complements = await model.find({});
+                let orders = await model.find({});
 
-                if (complements) {
+                if (orders) {
                     // If we've got a valid customer from the database
                     return {
                         message: "OK",
-                        complements: complements
+                        orders: orders
                     };
                 } else {
                     // If we haven't found any customer with that phone
                     return {
-                        message: "Couldn't find any pizza-complement on the database",
-                        complements: []
+                        message: "Couldn't find any order on the database",
+                        orders: []
                     };
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to search pizza-complement on database!");
+                return Boom.internal("Unable to search order on database!");
             }
         }
     },
     {
         method: "POST",
-        path: "/api/pizza-complement",
+        path: "/api/order",
         options: {
-            description: "Registers a pizza-complement",
-            tags: ["api", "Pizza complement"],
+            description: "Registers a order",
+            tags: ["api", "Order"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -60,7 +60,7 @@ module.exports = [
                 payload: Joi.object({
                     name: Joi.string().min(3).max(255).required(),
                     extraPrice: Joi.number().min(0).required()
-                }).label("PizzaComplement")
+                }).label("Order")
             }
         },
         
@@ -68,7 +68,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -77,25 +77,25 @@ module.exports = [
                     // Everything is fine :)
                     return {
                         message: "OK",
-                        complement: document
+                        order: document
                     };
                 } else {
                     // In case of error
-                    return Boom.internal("Unable to insert pizza-complement on database!");
+                    return Boom.internal("Unable to insert order on database!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to insert pizza-complement on database!");
+                return Boom.internal("Unable to insert order on database!");
             }
         }
     },
     {
         method: "PUT",
-        path: "/api/pizza-complement/{id}",
+        path: "/api/order/{id}",
         options: {
-            description: "Update pizza-complement info",
+            description: "Update order info",
             notes: "Requires an valid id",
-            tags: ["api", "Pizza complement"],
+            tags: ["api", "Order"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -106,7 +106,7 @@ module.exports = [
                 payload: Joi.object({
                     name: Joi.string().min(3).max(255),
                     extraPrice: Joi.number().min(0)
-                }).label("UpdatePizzaComplement")
+                }).label("UpdateOrder")
             }
         },
         
@@ -114,7 +114,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -123,22 +123,22 @@ module.exports = [
                         message: "OK"
                     } 
                 } else {
-                    return Boom.internal("Unable to update pizza-complement data!");
+                    return Boom.internal("Unable to update order data!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to update pizza-complement on database!");
+                return Boom.internal("Unable to update order on database!");
             } 
                 
         }
     },
     {
         method: "DELETE",
-        path: "/api/pizza-complement/{id}",
+        path: "/api/order/{id}",
         options: {
-            description: "Delete a complement",
+            description: "Delete a order",
             notes: "Requires an valid id",
-            tags: ["api", "Pizza complement"],
+            tags: ["api", "Order"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -153,7 +153,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 
@@ -162,11 +162,11 @@ module.exports = [
                         message: "OK"
                     } 
                 } else {
-                    return Boom.internal("Unable to delete pizza-complement!");
+                    return Boom.internal("Unable to delete order!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to delete pizza-complement on database!");
+                return Boom.internal("Unable to delete order on database!");
             }                 
         }
     }

@@ -13,7 +13,7 @@ module.exports = [
         options: {
             description: "Lists all info from customer with the provided phone",
             notes: "Requires an valid phone",
-            tags: ["api", "customer"],
+            tags: ["api", "Customer"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -57,7 +57,7 @@ module.exports = [
         options: {
             description: "Registers info from customer",
             notes: "Requires an valid phone",
-            tags: ["api", "customer"],
+            tags: ["api", "Customer"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -108,7 +108,7 @@ module.exports = [
         options: {
             description: "Update customer info",
             notes: "Requires an valid phone",
-            tags: ["api", "customer"],
+            tags: ["api", "Customer"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()

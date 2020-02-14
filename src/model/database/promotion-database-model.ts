@@ -6,8 +6,12 @@ export default class PromotionDatabaseModel implements DatabaseInjectable {
     
     async onInject(mongoose: typeof import("mongoose")): Promise<{ name: string, schema: Schema<any> }> {
         let schema = new Schema({
-            pizzas: { type: mongoose.Schema.Types.ObjectId, ref: "Pizza" },
-            drinks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Drink" }],
+            pizzas: [
+                { type: mongoose.Schema.Types.ObjectId, ref: "PizzaItem" }
+            ],
+            drinks: [
+                { type: mongoose.Schema.Types.ObjectId, ref: "DrinkItem" }
+            ],
             maxSliceCount: Number
         });
 
