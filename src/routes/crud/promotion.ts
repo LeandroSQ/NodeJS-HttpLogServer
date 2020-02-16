@@ -24,10 +24,18 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
 
-                let promotions = await model.find({})
+                let promotions = await model.find({ })
                                             .populate("pizzas")
+                                            .populate({
+                                                path: "pizzas",
+                                                populate: [
+                                                    { path: "size" },
+                                                    { path: "flavors" },
+                                                    { path: "complements" }
+                                                ]
+                                            })
                                             .populate("drinks");
 
                 if (promotions) {
@@ -63,7 +71,7 @@ module.exports = [
                     pizzas: Joi.array().items(Joi.string().min(10).max(128)).required(),
                     drinks: Joi.array().items(Joi.string().min(10).max(128)).required(),
                     maxSliceCount: Joi.number().min(1).max(10).required()
-                }).label("PizzaPromotion")
+                }).label("Promotion")
             }
         },
         
@@ -71,7 +79,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -110,7 +118,7 @@ module.exports = [
                     pizzas: Joi.array().items(Joi.string().min(10).max(128)),
                     drinks: Joi.array().items(Joi.string().min(10).max(128)),
                     maxSliceCount: Joi.number().min(1).max(10)
-                }).label("UpdatePizzaPromotion")
+                }).label("UpdatePromotion")
             }
         },
         
@@ -118,7 +126,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -157,7 +165,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 

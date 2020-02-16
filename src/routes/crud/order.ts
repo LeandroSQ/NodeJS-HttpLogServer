@@ -1,3 +1,4 @@
+import { PaymentTypes } from './../../enum/payment-types';
 import { Schema } from 'mongoose';
 import * as Boom from '@hapi/boom';
 import { Model } from 'mongoose';
@@ -5,6 +6,7 @@ import { DatabaseController } from '../../controller/database-controller';
 import { ServerRoute } from "@hapi/hapi";
 import * as Joi from "@hapi/joi";
 import Logger from "../../utils/logger";
+import { OrderStatus } from '../../enum/order-status';
 
 module.exports = [
     {
@@ -51,15 +53,22 @@ module.exports = [
         method: "POST",
         path: "/api/order",
         options: {
-            description: "Registers a order",
+            description: "Registers an order",
             tags: ["api", "Order"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
                 }).options({ allowUnknown: true }),
                 payload: Joi.object({
-                    name: Joi.string().min(3).max(255).required(),
-                    extraPrice: Joi.number().min(0).required()
+                    promotions: Joi.array().items(Joi.string().min(10).max(128)).required(),
+                    drinks: Joi.array().items(Joi.string().min(10).max(128)).required(),
+                    customer: Joi.string().min(10).max(128).required(),
+                    payment: {
+                        method: Joi.object({
+                            type: Joi.string().valid.apply(Joi, Object.values(PaymentTypes)).required(),
+                            change: Joi.number().required()
+                        }).label("PaymentMethod").required()                        
+                    }
                 }).label("Order")
             }
         },
@@ -70,14 +79,23 @@ module.exports = [
             
                 let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
                 
+                let object: any = Object.assign(request.payload, {});
+
+                // Calculates the total of it
+                let total = object.promotions.reduce((a, b) => a + b.price, 0) + object.drinks.reduce((a, b) => a + b.price, 0);
+
+                // Set the status of it
+                object.status = OrderStatus.Requested;
+
                 // Insert into the database
-                let document = await model.create(request.payload);
+                let document = await model.create(object);
     
                 if (document) {
                     // Everything is fine :)
                     return {
                         message: "OK",
-                        order: document
+                        total: total,
+                        status: object.status
                     };
                 } else {
                     // In case of error

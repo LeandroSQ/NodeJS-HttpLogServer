@@ -7,6 +7,16 @@ import * as Joi from "@hapi/joi";
 import Logger from "../../utils/logger";
 import PizzaFlavorDatabaseModel from '../../model/database/pizza-flavor-database-model';
 
+function handleModel(x: any): String { 
+    if (x) {
+        if (Array.isArray(x)) x = x[0];
+
+        if (x._id) return x._id;//.toString();
+    }
+
+    return null;
+}
+
 module.exports = [
     {
         method: "GET",
@@ -25,7 +35,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                /* let customer = DatabaseController.instance.declaredList["Customer"] as Model<any>;
+                let customer = DatabaseController.instance.declaredList["Customer"] as Model<any>;
                 await customer.deleteMany({ })
                 await customer.insertMany([
                     {
@@ -40,9 +50,9 @@ module.exports = [
                             "cep": "94180000"
                         }
                     }
-                ]); */
+                ]);
 
-                /* let drink = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
+                let drink = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
                 await drink.deleteMany({ });
                 await drink.insertMany([
                     {
@@ -53,9 +63,9 @@ module.exports = [
                         "name": "Guaraná 600ml",
                         "price": 3
                     }
-                ]); */
+                ]);
 
-                /* let complement = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let complement = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
                 await complement.deleteMany({ });
                 await complement.insertMany([
                     {
@@ -66,10 +76,10 @@ module.exports = [
                         "name": "Borda de cheddar",
                         "extraPrice": 20
                     }
-                ]); */
+                ]);
 
                 let flavor = DatabaseController.instance.declaredList["PizzaFlavor"] as Model<any>;
-                /* await flavor.deleteMany({ });
+                await flavor.deleteMany({ });
                 await flavor.insertMany([
                     {
                         "name": "4 Queijos",
@@ -83,10 +93,10 @@ module.exports = [
                         "extraPrice": 0,
                         "type": "Traditional"
                     }
-                ]); */
+                ]);
 
                 let size = DatabaseController.instance.declaredList["PizzaSize"] as Model<any>;
-                /* await size.deleteMany({ });
+                await size.deleteMany({ });
                 await size.insertMany([ 
                     {
                         "description": "Pizza Pequena",
@@ -100,34 +110,35 @@ module.exports = [
                         "description": "Pizza Grande",
                         "size": "45cm"
                     },
-                ]); */
+                ]);
 
                 let pizza = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
-                await pizza.deleteMany({ });
+                await pizza.deleteMany({ });                
                 await pizza.insertMany([ 
                     {
-                        "size": size.findOne({ }).map((x:any) => x._id),
-                        "flavors": flavor.find({ }).map((x: any) => x._id),
-                        "complements": flavor.find({ }).map((x: any) => x._id),
+                        "size": handleModel(await size.findOne({ })),
+                        "flavors": handleModel(await flavor.find({ })),
+                        "complements": handleModel(await complement.find({ })),
                         "observations": "Sem cebola"
                     }
                 ]);
 
-                /* let promotion = DatabaseController.instance.declaredList["PizzaPromotion"] as Model<any>;
+                let promotion = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
                 await promotion.deleteMany({ });
                 await promotion.insertMany([
                     {
-                        "pizzas": pizza.find({ }).map((x: any) => x._id),
-                        "drinks": drink.find({ }).map((x: any) => x._id),
+                        "pizzas": handleModel(await pizza.find({ })),
+                        "drinks": handleModel(await drink.find({ })),
                         "maxSliceCount": 4
                     }
-                ]); */
+                ]); 
 
                 return {
                     message: "OK"
                 };
             } catch(e) {
                 console.trace(e);
+                console.error(e);
                 return Boom.internal("Unable to reset the database!");
             }
         }

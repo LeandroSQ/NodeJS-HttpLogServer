@@ -1,3 +1,5 @@
+import { PaymentTypes } from './../../enum/payment-types';
+import { OrderStatus } from './../../enum/order-status';
 import DatabaseInjectable from "../database-injectable";
 import { Schema } from "mongoose";
 import { number } from "joi";
@@ -19,32 +21,17 @@ export default class OrderDatabaseModel implements DatabaseInjectable {
                 method: {
                     type: { 
                         type: String, 
-                        enum: [
-                            "Elo", 
-                            "Cash",
-                            "Visa", 
-                            "Hipercard", 
-                            "Mastercard", 
-                            "VR - Alelo", 
-                            "VR - Sodexo", 
-                            "VR - Ticket", 
-                            "American Express"
-                        ] 
+                        enum: Object.values(PaymentTypes)
                     },
                     change: Number
                 },
                 status: {
                     type: String,
-                    enum: [
-                        "ProcessamentoRequisitado", 
-                        "Processado", 
-                        "Confirmado", 
-                        "EmPreparo", 
-                        "EmTransporte", 
-                        "Entregue", 
-                        "NaoEntregue", 
-                        "Cancelado"
-                    ]
+                    enum: Object.values(OrderStatus)
+                },
+                observations: {
+                    type: String,
+                    required: false
                 }
             }
         }, {

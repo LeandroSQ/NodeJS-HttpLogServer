@@ -24,9 +24,10 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaPizza"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
 
-                let pizzas = await model.find({});
+                let pizzas = await model.find({ })
+                                        .populate(["size", "flavors", "complements"]);
 
                 if (pizzas) {
                     // If we've got a valid customer from the database
@@ -66,7 +67,7 @@ module.exports = [
                         Joi.string().min(10).max(128).required()
                     ).required(),
                     observations: Joi.string().default("").trim(true).min(3).max(255).optional()
-                }).label("PizzaPizza")
+                }).label("Pizza")
             }
         },
         
@@ -74,7 +75,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["PizzaPizza"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -118,7 +119,7 @@ module.exports = [
                         Joi.string().min(10).max(128).required()
                     ),
                     observations: Joi.string().default("").trim(true).min(3).max(255)
-                }).label("UpdatePizzaPizza")
+                }).label("UpdatePizza")
             }
         },
         
@@ -126,7 +127,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaPizza"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -165,7 +166,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaPizza"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 
