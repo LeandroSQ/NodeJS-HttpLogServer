@@ -19,6 +19,32 @@ function handleModel(x: any): String {
 
 module.exports = [
     {
+        method: ["OPTIONS", "GET", "POST", "DELETE"],
+        path: "/{param*}",
+        options: {
+            auth: false,
+            tags: ["api", "Utility"],
+        },
+        
+        handler: function(request, h) {
+            console.log ("OPA");
+
+            try {
+                let response = h.response({});
+                
+                return response.code(200)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Headers", request.headers['access-control-request-headers'] || "*")
+                    .header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+                    .header("Access-Control-Max-Age", "86400");                    
+            } catch (e) {
+                console.trace(e);
+                console.error(e);
+                return Boom.internal("Unable to handle CORS preflight!");
+            }
+        }
+    },
+    {
         method: "GET",
         path: "/api/reset-models",
         options: {

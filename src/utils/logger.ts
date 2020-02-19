@@ -27,6 +27,7 @@ export default class Logger {
                 break;
             case "controller":
             case "auth":
+            case "cors":
                 fn = chalk.cyan;
                 break;
             case "database":

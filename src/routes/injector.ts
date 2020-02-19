@@ -74,7 +74,29 @@ class RouteInjector implements ServerInjectable {
 
     /* This method will be called whenever the server gets created */
     async onServerCreated(server: Server) {
-        Logger.log(["server", "route"], `Injecting "${this.routeList.length} routes"...`);        
+        Logger.log(["server", "route"], `Injecting "${this.routeList.length} routes"...`); 
+        
+        // this.routeList.forEach(x => {
+        //     x.options["cors"] = {
+                
+        //         /* additionalHeaders: [
+        //             'cache-control', 
+        //             'x-requested-with', 
+        //             'user-agent',
+        //             'referer',
+        //             'origin',
+        //             'host',
+        //             'connection',
+        //             'accept',
+        //             'accept-encoding',
+        //             'accept-language',
+        //             'access-control-request-headers',
+        //             'access-control-request-method'
+        //         ], */
+                
+        //     }
+        // })
+        
         server.route(this.routeList);
     }
 
