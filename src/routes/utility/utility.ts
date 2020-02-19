@@ -1,3 +1,4 @@
+import { OrderStatus } from './../../enum/order-status';
 import { Schema } from 'mongoose';
 import * as Boom from '@hapi/boom';
 import { Model } from 'mongoose';
@@ -18,32 +19,6 @@ function handleModel(x: any): String {
 }
 
 module.exports = [
-    {
-        method: ["OPTIONS", "GET", "POST", "DELETE"],
-        path: "/{param*}",
-        options: {
-            auth: false,
-            tags: ["api", "Utility"],
-        },
-        
-        handler: function(request, h) {
-            console.log ("OPA");
-
-            try {
-                let response = h.response({});
-                
-                return response.code(200)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Headers", request.headers['access-control-request-headers'] || "*")
-                    .header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-                    .header("Access-Control-Max-Age", "86400");                    
-            } catch (e) {
-                console.trace(e);
-                console.error(e);
-                return Boom.internal("Unable to handle CORS preflight!");
-            }
-        }
-    },
     {
         method: "GET",
         path: "/api/reset-models",
@@ -74,6 +49,18 @@ module.exports = [
                             "district": "Bairro 1",
                             "complement": "Casa",
                             "cep": "94180000"
+                        }
+                    },
+                    {
+                        "name": "Reginaldo Primo",
+                        "phone": "51992566520",
+                        "document": "30130130131",
+                        "delivery": {
+                            "address": "Rua 2",
+                            "number": 2,
+                            "district": "Bairro 2",
+                            "complement": "Casa",
+                            "cep": "94180002"
                         }
                     }
                 ]);
@@ -158,6 +145,37 @@ module.exports = [
                         "maxSliceCount": 4
                     }
                 ]); 
+
+                let order = DatabaseController.instance.declaredList["Order"] as Model<any>;
+                await order.deleteMany({ });
+                await order.insertMany([
+                    {
+                        "promotions": handleModel(await promotion.find({ })),
+                        "drinks": handleModel(await drink.find({ })),
+                        "customer": handleModel(await customer.findOne({ document: "30030030030" })),
+                        "total": 0,
+                        "status": OrderStatus.Requested,
+                        "payment": {
+                            "method": {
+                                "type": "Elo",
+                                "change": 0
+                            }
+                        }
+                    },
+                    {
+                        "promotions": handleModel(await promotion.find({ })),
+                        "drinks": handleModel(await drink.find({ })),
+                        "customer": handleModel(await customer.findOne({ document: "30130130131" })),
+                        "total": 0,
+                        "status": OrderStatus.Processed,
+                        "payment": {
+                            "method": {
+                                "type": "Elo",
+                                "change": 0
+                            }
+                        }
+                    }
+                ]);
 
                 return {
                     message: "OK"

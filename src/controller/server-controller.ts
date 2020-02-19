@@ -19,24 +19,6 @@ export default class ServerController {
         port: Configuration.server.port,
         routes: {
             validate: { failAction: this.onError },
-            /* cors: {
-                origin: [
-                    "*"
-                ],
-                additionalHeaders: [
-                    'host',
-                    'connection',
-                    'access-control-request-method',
-                    'origin',
-                    'user-agent',
-                    'access-control-request-headers',
-                    'accept',
-                    'referer',
-                    'accept-encoding',
-                    'accept-language'
-                ],
-                credentials: true
-            } */
         }
     } as const;
 

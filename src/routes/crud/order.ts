@@ -28,7 +28,25 @@ module.exports = [
 
                 let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
 
-                let orders = await model.find({});
+                let orders = await model.find({})
+                                        .populate("customer")
+                                        .populate("drinks")
+                                        .populate("promotions")
+                                        .populate({
+                                            path: "promotions",
+                                            populate: [
+                                                { path: "pizzas" },
+                                                { 
+                                                    path: "pizzas", 
+                                                    populate: [
+                                                        { path: "size" },
+                                                        { path: "flavors" },
+                                                        { path: "complements" }
+                                                    ]
+                                                },
+                                                { path: "drinks" }
+                                            ]
+                                        });
 
                 if (orders) {
                     // If we've got a valid customer from the database
@@ -122,8 +140,17 @@ module.exports = [
                     id: Joi.string().min(10).max(128).required() 
                 }),
                 payload: Joi.object({
-                    name: Joi.string().min(3).max(255),
-                    extraPrice: Joi.number().min(0)
+                    promotions: Joi.array().items(Joi.string().min(10).max(128)),
+                    drinks: Joi.array().items(Joi.string().min(10).max(128)),
+                    customer: Joi.string().min(10).max(128),
+                    total: Joi.number().min(0),
+                    status: Joi.string().valid.apply(Joi, Object.values(OrderStatus)),
+                    payment: {
+                        method: Joi.object({
+                            type: Joi.string().valid.apply(Joi, Object.values(PaymentTypes)),
+                            change: Joi.number()
+                        }).label("UpdatePaymentMethod")
+                    }
                 }).label("UpdateOrder")
             }
         },

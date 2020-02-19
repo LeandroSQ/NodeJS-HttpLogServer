@@ -9,15 +9,23 @@ export default class OrderDatabaseModel implements DatabaseInjectable {
     async onInject(mongoose: typeof import("mongoose")): Promise<{ name: string, schema: Schema<any> }> {
         let schema = new Schema({
             promotions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Promotion" }],
-            drinks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Drink" }],
+            drinks: [{ type: mongoose.Schema.Types.ObjectId, ref: "DrinkItem" }],
             customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+            total: { 
+                type: Number, 
+                get: function () { 
+                    return this.promotions.reduce((a, b) => a + b.price, 0) + this.drinks.reduce((a, b) => a + b.price, 0);
+                }
+            },
+            status: {
+                type: String,
+                enum: Object.values(OrderStatus)
+            },
+            observations: {
+                type: String,
+                required: false
+            },
             payment: {
-                total: { 
-                    type: Number, 
-                    get: function () { 
-                        return this.promotions.reduce((a, b) => a + b.price, 0) + this.drinks.reduce((a, b) => a + b.price, 0);
-                    }
-                },
                 method: {
                     type: { 
                         type: String, 
@@ -25,14 +33,6 @@ export default class OrderDatabaseModel implements DatabaseInjectable {
                     },
                     change: Number
                 },
-                status: {
-                    type: String,
-                    enum: Object.values(OrderStatus)
-                },
-                observations: {
-                    type: String,
-                    required: false
-                }
             }
         }, {
             timestamps: {
