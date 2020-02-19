@@ -16,7 +16,15 @@ export default class ServerController {
         host: Configuration.server.host,
         port: Configuration.server.port,
         routes: {
-            validate: { failAction: this.onError }
+            validate: { failAction: this.onError },
+            cors: {
+                origin: ['*'], // an array of origins or 'ignore'
+                headers: ["Access-Control-Allow-Headers", "Access-Control-Allow-Method", "Access-Control-Allow-Origin","Accept", "Authorization", "Content-Type", "If-None-Match", "Accept-language"], // an array of strings - 'Access-Control-Allow-Headers' 
+                exposedHeaders: ["Access-Control-Allow-Headers", "Access-Control-Allow-Origin","Accept", "Authorization", "Content-Type", "If-None-Match", "Accept-language"] , // an array of exposed headers - 'Access-Control-Expose-Headers',
+                additionalExposedHeaders: ["Access-Control-Allow-Headers", "Access-Control-Allow-Origin","Accept", "Authorization", "Content-Type", "If-None-Match", "Accept-language"] , // an array of additional exposed headers
+                maxAge: 60,
+                credentials: true // boolean - 'Access-Control-Allow-Credentials'
+            }
         }
     } as const;
 
@@ -62,7 +70,7 @@ export default class ServerController {
             // Creates the server with the configuration from the provided .json file
             // And enables the custom error logging strategy
             this.hapiServer = new Hapi.Server(this.serverConfig);
-
+            
             // Notify injectables that the server has been created
             await this.injectableController.notifyServerCreated(this.hapiServer);
             await this.databaseController.notifyServerCreated(this.hapiServer);

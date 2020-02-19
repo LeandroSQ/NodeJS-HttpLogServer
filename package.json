@@ -20,6 +20,7 @@
     "@hapi/vision": "^5.5.4",
     "chalk": "^3.0.0",
     "hapi-auth-bearer-token": "^6.1.2",
+    "hapi-cors": "^1.0.3",
     "hapi-oauth2-server-plugin": "^0.4.0",
     "mongoose": "^5.8.11",
     "nodemon": "^2.0.1",
