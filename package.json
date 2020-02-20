@@ -23,6 +23,7 @@
     "hapi-cors": "^1.0.3",
     "hapi-oauth2-server-plugin": "^0.4.0",
     "mongoose": "^5.8.11",
+    "mongoose-sequence": "^5.2.2",
     "nodemon": "^2.0.1",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"

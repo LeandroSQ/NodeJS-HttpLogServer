@@ -52,6 +52,46 @@ module.exports = [
         }
     },
     {
+        method: "GET",
+        path: "/api/customer",
+        options: {
+            description: "Lists all customers",
+            tags: ["api", "Customer"],
+            validate: {
+                headers: Joi.object({
+                    authorization: Joi.string().default("Bearer 1234").required()
+                }).options({ allowUnknown: true })
+            }
+        },
+
+        handler: async function(request, h) {
+            try {
+                Logger.route(request);
+
+                let model = DatabaseController.instance.declaredList["Customer"] as Model<any>;
+
+                let customers = await model.find({ });
+
+                if (customers) {
+                    // If we've got a valid customer from the database
+                    return {
+                        message: "OK",
+                        customers: customers
+                    };
+                } else {
+                    // If we haven't found any customer with that phone
+                    return {
+                        message: "Couldn't find any customer on the database",
+                        customers: []
+                    };
+                }
+            } catch(e) {
+                console.trace(e);
+                return Boom.internal("Unable to search on database!");
+            }
+        }
+    },
+    {
         method: "POST",
         path: "/api/customer",
         options: {

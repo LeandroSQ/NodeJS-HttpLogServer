@@ -1,5 +1,4 @@
 export enum OrderStatus {
-    Requested = "ProcessamentoRequisitado", // Pedido feito pelo client
     Processed = "Processado", // Foi identificada uma matriz que pode atender
     Confirmed = "Confirmado", // Pedido foi confirmado pela matriz
     InPreparation = "EmPreparo", // Preparo do pedido foi confirmado pela matriz

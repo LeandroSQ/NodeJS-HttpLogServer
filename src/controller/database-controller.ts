@@ -105,7 +105,7 @@ export class DatabaseController {
                 }         
     
                 this.mongoose = Mongoose.connection;
-    
+
                 Logger.log(["server", "database"], `Connected with the database server! '${this.mongoose.host}'`)
                 
                 // Define the post-connection error handler
@@ -117,6 +117,27 @@ export class DatabaseController {
             } catch(e) {
                 console.trace(e);
                 Logger.log(["error", "server", "database"], "Unable to connect with the database!\n" + e);
+                reject(e);
+            } 
+        });
+    }
+
+    private defineModels() {
+        return new Promise(async (resolve, reject) => {
+            Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);            
+           
+            try {
+                for (const injectable of this.modelList) {
+                    let object = await injectable.onInject(Mongoose);
+                    let model = Mongoose.model(object.name, object.schema);
+                    this.declaredList[object.name] = model;
+                }
+
+                resolve();
+            } catch (e) {
+                console.trace(e);
+                Logger.log(["server", "database", "error"], `Error while injecting models ${e}`);
+
                 reject(e);
             } 
         });
@@ -139,25 +160,8 @@ export class DatabaseController {
      * 
      * @param server The running server instance
      ***/
-    notifyServerCreated(server: Server): Promise<any>{
-        return new Promise(async (resolve, reject) => {
-            Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);            
-
-            try {
-                for (const injectable of this.modelList) {
-                    let object = await injectable.onInject(Mongoose);
-                    let model = Mongoose.model(object.name, object.schema);
-                    this.declaredList[object.name] = model;
-                }
-
-                resolve();
-            } catch (e) {
-                console.trace(e);
-                Logger.log(["server", "database", "error"], `Error while injecting models ${e}`);
-
-                reject(e);
-            } 
-        });
+    async notifyServerCreated(server: Server): Promise<any>{
+        await this;this.defineModels();
     }
 
     /***

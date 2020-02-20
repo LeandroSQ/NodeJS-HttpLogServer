@@ -103,7 +103,7 @@ module.exports = [
                 let total = object.promotions.reduce((a, b) => a + b.price, 0) + object.drinks.reduce((a, b) => a + b.price, 0);
 
                 // Set the status of it
-                object.status = OrderStatus.Requested;
+                object.status = OrderStatus.Processed;
 
                 // Insert into the database
                 let document = await model.create(object);

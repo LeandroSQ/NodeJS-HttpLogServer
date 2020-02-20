@@ -1,3 +1,4 @@
+import { PaymentTypes } from './../../enum/payment-types';
 import { OrderStatus } from './../../enum/order-status';
 import { Schema } from 'mongoose';
 import * as Boom from '@hapi/boom';
@@ -7,6 +8,7 @@ import { ServerRoute } from "@hapi/hapi";
 import * as Joi from "@hapi/joi";
 import Logger from "../../utils/logger";
 import PizzaFlavorDatabaseModel from '../../model/database/pizza-flavor-database-model';
+import { OrderSources } from '../../enum/order-sources';
 
 function handleModel(x: any): String { 
     if (x) {
@@ -154,10 +156,12 @@ module.exports = [
                         "drinks": handleModel(await drink.find({ })),
                         "customer": handleModel(await customer.findOne({ document: "30030030030" })),
                         "total": 0,
-                        "status": OrderStatus.Requested,
+                        "status": OrderStatus.Processed,
+                        "createdAt": "2020-01-26",
+                        "source": OrderSources.Balcony,
                         "payment": {
                             "method": {
-                                "type": "Elo",
+                                "type": PaymentTypes.Mastercard,
                                 "change": 0
                             }
                         }
@@ -167,15 +171,68 @@ module.exports = [
                         "drinks": handleModel(await drink.find({ })),
                         "customer": handleModel(await customer.findOne({ document: "30130130131" })),
                         "total": 0,
-                        "status": OrderStatus.Processed,
+                        "status": OrderStatus.Confirmed,
+                        "source": OrderSources.Site,
+                        "createdAt": "2020-01-25",
                         "payment": {
                             "method": {
-                                "type": "Elo",
+                                "type": PaymentTypes.Elo,
                                 "change": 0
+                            }
+                        }
+                    },
+                    {
+                        "promotions": handleModel(await promotion.find({ })),
+                        "drinks": handleModel(await drink.find({ })),
+                        "customer": handleModel(await customer.findOne({ document: "30130130131" })),
+                        "total": 0,
+                        "createdAt": "2020-02-19",
+                        "status": OrderStatus.Confirmed,
+                        "source": OrderSources.Others,
+                        "payment": {
+                            "method": {
+                                "type": PaymentTypes.Cash,
+                                "change": 500
                             }
                         }
                     }
                 ]);
+
+                for (var i = 0; i < 100; i++) {
+                    let statuses = Object.values(OrderStatus);
+                    let status = statuses[Math.floor(Math.random() * statuses.length)];
+
+                    let sources = Object.values(OrderSources);
+                    let source = sources[Math.floor(Math.random() * sources.length)];
+
+                    let payments = Object.values(PaymentTypes);
+                    let payment = payments[Math.floor(Math.random() * payments.length)];
+
+                    let customerCount = await customer.countDocuments({ });
+                    let customerIndex = Math.floor(Math.random() * (customerCount));
+                    let selectedCustomer = await customer.findOne().skip(customerIndex);
+
+                    let obj: any = {
+                        "promotions": handleModel(await promotion.find({ })),
+                        "drinks": handleModel(await drink.find({ })),
+                        "customer": handleModel(selectedCustomer),
+                        "total": 0,
+                        "status": status,
+                        "createdAt": `2020-${Math.floor(Math.random() * 11 + 1)}-${Math.floor(Math.random() * 27 + 1)}`,
+                        "source": source,
+                        "payment": {
+                            "method": {
+                                "type": payment,
+                                "change": payment == PaymentTypes.Cash ? Math.random()*500 : 0
+                            }
+                        }
+                    };
+
+                    if (Math.random() <= 0.5) obj.promotions = [];
+                    else if (Math.random() <= 0.5) obj.drinks = [];
+
+                    await order.create(obj);
+                }
 
                 return {
                     message: "OK"
