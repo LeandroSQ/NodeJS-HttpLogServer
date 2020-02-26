@@ -8,7 +8,7 @@ export default class PizzaComplementDatabaseModel implements DatabaseInjectable 
             name: "PizzaComplement",
             schema: new Schema({
                 name: String,
-                extraPrice: { type: Number, default: 0.00 },                
+                price: { type: Number, default: 0.00 },                
             })
         };
     }

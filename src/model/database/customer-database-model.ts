@@ -7,8 +7,8 @@ export default class CustomerDatabaseModel implements DatabaseInjectable {
     async onInject(mongoose: typeof import("mongoose")): Promise<{ name: string, schema: Schema<any> }> {
         let schema = new Schema({
             name: String,
-            phone: { type: String, required: true },
             document: { type: String, required: false },
+            phone: { type: String, required: true },
             delivery: {
                 address: { type: String, required: true },
                 number: { type: String, required: true },
@@ -28,5 +28,5 @@ export default class CustomerDatabaseModel implements DatabaseInjectable {
             schema: schema
         };
     }
-// "dev": "nodemon --watch \"src/\" --exec \"ts-node src/Main.ts\" -e ts",
+
 }

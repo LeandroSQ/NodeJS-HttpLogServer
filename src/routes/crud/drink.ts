@@ -24,7 +24,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
 
                 let drinks = await model.find({});
 
@@ -68,7 +68,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -114,7 +114,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -153,7 +153,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["DrinkItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Drink"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 

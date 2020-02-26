@@ -1,3 +1,4 @@
+import { PizzaFlavorTypes } from './../../enum/pizza-flavor-types';
 import { Schema } from 'mongoose';
 import * as Boom from '@hapi/boom';
 import { Model } from 'mongoose';
@@ -60,8 +61,8 @@ module.exports = [
                 payload: Joi.object({
                     name: Joi.string().min(3).max(255).required(),
                     ingredients: Joi.array().items(Joi.string().min(3).max(255).required()).required(),
-                    extraPrice: Joi.number().min(0).required(),
-                    type: Joi.string().valid("Sweet", "Traditional", "Premium").required()
+                    price: Joi.number().min(0).required(),
+                    type: Joi.string().valid.apply(Joi, Object.values(PizzaFlavorTypes)).required()
                 }).label("PizzaFlavor")
             }
         },
@@ -108,7 +109,7 @@ module.exports = [
                 payload: Joi.object({
                     name: Joi.string().min(3).max(255),
                     ingredients: Joi.array().items(Joi.string().min(3).max(255)),
-                    extraPrice: Joi.number().min(0),
+                    price: Joi.number().min(0),
                     type: Joi.string().valid("Sweet", "Traditional", "Premium")
                 }).label("UpdatePizzaFlavor")
             }

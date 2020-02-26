@@ -1,3 +1,4 @@
+import { PizzaFlavorTypes } from './../../enum/pizza-flavor-types';
 import DatabaseInjectable from "../database-injectable";
 import { Schema } from "mongoose";
 import { number } from "joi";
@@ -7,23 +8,19 @@ export default class PromotionDatabaseModel implements DatabaseInjectable {
     async onInject(mongoose: typeof import("mongoose")): Promise<{ name: string, schema: Schema<any> }> {
         let schema = new Schema({
             pizzas: [
-                { type: mongoose.Schema.Types.ObjectId, ref: "PizzaItem" }
+                {
+                    maxSliceCount: Number,
+                    size: { type: mongoose.Schema.Types.ObjectId, ref: "PizzaSize" },
+                    complements: [{ type: mongoose.Schema.Types.ObjectId, ref: "PizzaComplement" }],
+                    allowedFlavorTypes: [{ type: String, enum: Object.values(PizzaFlavorTypes) }]
+                }
             ],
-            drinks: [
-                { type: mongoose.Schema.Types.ObjectId, ref: "DrinkItem" }
-            ],
-            maxSliceCount: Number
+            drinks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Drink" }],
+            price: { type: Number, required: true },
+            name: String,
+            description: String,
+            highlighted: { type: Boolean, default: false }
         });
-
-        schema.virtual("price")
-            .get(function () {
-                return this.pizzas.reduce((a, b) => a + b.extraPrice, 0) + this.drinks.reduce((a, b) => a + b.price, 0)
-            });
-
-        schema.virtual("items")
-            .get(function () {
-                return this.pizzas.concat(this.drinks);
-            });
 
         return {
             name: "Promotion",

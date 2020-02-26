@@ -1,3 +1,4 @@
+import { PizzaFlavorTypes } from './../../enum/pizza-flavor-types';
 import DatabaseInjectable from "../database-injectable";
 import { Schema } from "mongoose";
 
@@ -9,10 +10,10 @@ export default class PizzaFlavorDatabaseModel implements DatabaseInjectable {
             schema: new Schema({
                 name: String,
                 ingredients: [String],
-                extraPrice: { type: Number, default: 0.00 },
+                price: { type: Number, default: 0.00 },
                 type: {
                     type: String,
-                    enum: ["Sweet", "Traditional", "Premium"]
+                    enum: Object.values(PizzaFlavorTypes)
                 } 
             })
         };

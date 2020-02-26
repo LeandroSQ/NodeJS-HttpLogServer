@@ -5,6 +5,7 @@ import { DatabaseController } from '../../controller/database-controller';
 import { ServerRoute } from "@hapi/hapi";
 import * as Joi from "@hapi/joi";
 import Logger from "../../utils/logger";
+import { PizzaFlavorTypes } from '../../enum/pizza-flavor-types';
 
 module.exports = [
     {
@@ -27,12 +28,10 @@ module.exports = [
                 let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
 
                 let promotions = await model.find({ })
-                                            .populate("pizzas")
                                             .populate({
                                                 path: "pizzas",
                                                 populate: [
                                                     { path: "size" },
-                                                    { path: "flavors" },
                                                     { path: "complements" }
                                                 ]
                                             })
@@ -59,18 +58,24 @@ module.exports = [
     },
     {
         method: "POST",
-        path: "/api/pizza-promotion",
+        path: "/api/promotion",
         options: {
-            description: "Registers a pizza-promotion",
+            description: "Registers a promotion",
             tags: ["api", "Promotion"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
                 }).options({ allowUnknown: true }),
                 payload: Joi.object({
-                    pizzas: Joi.array().items(Joi.string().min(10).max(128)).required(),
+                    pizzas: Joi.array().items(Joi.object({
+                        maxSliceCount: Joi.number().required(),
+                        size: Joi.string().min(10).max(128).required(),
+                        complements: Joi.array().items(Joi.string().min(10).max(128)).required(),
+                        allowedFlavorTypes: Joi.array().items(Joi.string().valid.apply(Joi, Object.values(PizzaFlavorTypes))).required()
+                    }).label("PromotionPizzaInfo")),
                     drinks: Joi.array().items(Joi.string().min(10).max(128)).required(),
-                    maxSliceCount: Joi.number().min(1).max(10).required()
+                    price: Joi.number().required(),
+                    highlighted: Joi.boolean().required()
                 }).label("Promotion")
             }
         },
@@ -115,9 +120,15 @@ module.exports = [
                     id: Joi.string().min(10).max(128).required() 
                 }),
                 payload: Joi.object({
-                    pizzas: Joi.array().items(Joi.string().min(10).max(128)),
+                    pizzas: Joi.array().items(Joi.object({
+                        maxSliceCount: Joi.number(),
+                        size: Joi.string().min(10).max(128),
+                        complements: Joi.array().items(Joi.string().min(10).max(128)),
+                        allowedFlavorTypes: Joi.array().items(Joi.string().valid.apply(Joi, Object.values(PizzaFlavorTypes)))
+                    }).label("UpdatePromotionPizzaInfo")),
                     drinks: Joi.array().items(Joi.string().min(10).max(128)),
-                    maxSliceCount: Joi.number().min(1).max(10)
+                    price: Joi.number(),
+                    highlighted: Joi.boolean()
                 }).label("UpdatePromotion")
             }
         },
@@ -140,8 +151,7 @@ module.exports = [
             } catch(e) {
                 console.trace(e);
                 return Boom.internal("Unable to update pizza-promotion on database!");
-            } 
-                
+            }
         }
     },
     {

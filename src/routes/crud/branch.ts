@@ -9,10 +9,10 @@ import Logger from "../../utils/logger";
 module.exports = [
     {
         method: "GET",
-        path: "/api/pizza",
+        path: "/api/branch",
         options: {
-            description: "Lists all pizzas",
-            tags: ["api", "Pizza"],
+            description: "Lists all branches",
+            tags: ["api", "Branch"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -24,50 +24,54 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Branch"] as Model<any>;
 
-                let pizzas = await model.find({ })
-                                        .populate(["size", "flavors", "complements"]);
+                let branches = await model.find({});
 
-                if (pizzas) {
+                if (branches) {
                     // If we've got a valid customer from the database
                     return {
                         message: "OK",
-                        pizzas: pizzas
+                        branches: branches
                     };
                 } else {
                     // If we haven't found any customer with that phone
                     return {
-                        message: "Couldn't find any pizza on the database",
-                        pizzas: []
+                        message: "Couldn't find any branch on the database",
+                        branches: []
                     };
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to search pizza on database!");
+                return Boom.internal("Unable to search on database!");
             }
         }
     },
     {
         method: "POST",
-        path: "/api/pizza",
+        path: "/api/branch",
         options: {
-            description: "Registers a pizza",
-            tags: ["api", "Pizza"],
+            description: "Registers a branch",
+            tags: ["api", "Branch"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
                 }).options({ allowUnknown: true }),
                 payload: Joi.object({
-                    size: Joi.string().min(10).max(128).required(),
-                    flavors: Joi.array().items(
-                        Joi.string().min(10).max(128).required()
-                    ).required(),
-                    complements: Joi.array().items(
-                        Joi.string().min(10).max(128).required()
-                    ).required(),
-                    observations: Joi.string().default("").trim(true).min(3).max(255).optional()
-                }).label("Pizza")
+                    name: Joi.string().min(3).max(255).required(),
+                    phone: Joi.string().min(10).max(11).required(),
+                    delivery: Joi.object({
+                        address: Joi.string().min(3).max(255).required(),
+                        number: Joi.number().required(),
+                        district: Joi.string().min(3).max(255).required(),
+                        complement: Joi.string().min(3).max(255),
+                        cep: Joi.string().min(8).max(8).required(),
+                        location: Joi.object({
+                            latitude: Joi.number().required(),
+                            longitude: Joi.number().required()
+                        }).label("LatitudeLongitudeWrapper").required()
+                    }).required().label("BranchAddress")
+                }).label("Branch")
             }
         },
         
@@ -75,7 +79,7 @@ module.exports = [
             try {
                 Logger.route(request);
             
-                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Branch"] as Model<any>;
                 
                 // Insert into the database
                 let document = await model.create(request.payload);
@@ -84,25 +88,25 @@ module.exports = [
                     // Everything is fine :)
                     return {
                         message: "OK",
-                        pizza: document
+                        branch: document
                     };
                 } else {
                     // In case of error
-                    return Boom.internal("Unable to insert pizza on database!");
+                    return Boom.internal("Unable to insert on database!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to insert pizza on database!");
+                return Boom.internal("Unable to update on database!");
             }
         }
     },
     {
         method: "PUT",
-        path: "/api/pizza/{id}",
+        path: "/api/branch/{id}",
         options: {
-            description: "Update pizza info",
+            description: "Update branch info",
             notes: "Requires an valid id",
-            tags: ["api", "Pizza"],
+            tags: ["api", "Branch"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -111,15 +115,20 @@ module.exports = [
                     id: Joi.string().min(10).max(128).required() 
                 }),
                 payload: Joi.object({
-                    size: Joi.string().min(10).max(128),
-                    flavors: Joi.array().items(
-                        Joi.string().min(10).max(128).required()
-                    ),
-                    complements: Joi.array().items(
-                        Joi.string().min(10).max(128).required()
-                    ),
-                    observations: Joi.string().default("").trim(true).min(3).max(255)
-                }).label("UpdatePizza")
+                    name: Joi.string().min(3).max(255),
+                    phone: Joi.string().min(10).max(11),
+                    delivery: Joi.object({
+                        address: Joi.string().min(3).max(255),
+                        number: Joi.number(),
+                        district: Joi.string().min(3).max(255),
+                        complement: Joi.string().min(3).max(255),
+                        cep: Joi.string().min(8).max(8),
+                        location: Joi.object({
+                            latitude: Joi.number(),
+                            longitude: Joi.number()
+                        }).label("UpdateLatitudeLongitudeWrapper")
+                    }).required().label("UpdateBranchAddress")
+                }).label("UpdateBranch")
             }
         },
         
@@ -127,7 +136,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Branch"] as Model<any>;
 
                 let result = await model.updateOne({ _id: request.params.id }, request.payload);
 
@@ -136,22 +145,22 @@ module.exports = [
                         message: "OK"
                     } 
                 } else {
-                    return Boom.internal("Unable to update pizza data!");
+                    return Boom.internal("Unable to update branch data!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to update pizza on database!");
+                return Boom.internal("Unable to insert on database!");
             } 
                 
         }
     },
     {
         method: "DELETE",
-        path: "/api/pizza/{id}",
+        path: "/api/branch/{id}",
         options: {
-            description: "Delete a pizza",
+            description: "Delete a branch",
             notes: "Requires an valid id",
-            tags: ["api", "Pizza"],
+            tags: ["api", "Branch"],
             validate: {
                 headers: Joi.object({
                     authorization: Joi.string().default("Bearer 1234").required()
@@ -166,7 +175,7 @@ module.exports = [
             try {
                 Logger.route(request);
 
-                let model = DatabaseController.instance.declaredList["PizzaItem"] as Model<any>;
+                let model = DatabaseController.instance.declaredList["Branch"] as Model<any>;
 
                 let result = await model.deleteOne({ _id: request.params.id });
 
@@ -175,11 +184,11 @@ module.exports = [
                         message: "OK"
                     } 
                 } else {
-                    return Boom.internal("Unable to delete pizza!");
+                    return Boom.internal("Unable to delete branch!");
                 }
             } catch(e) {
                 console.trace(e);
-                return Boom.internal("Unable to delete pizza on database!");
+                return Boom.internal("Unable to delete on database!");
             }                 
         }
     }

@@ -59,7 +59,7 @@ module.exports = [
                 }).options({ allowUnknown: true }),
                 payload: Joi.object({
                     name: Joi.string().min(3).max(255).required(),
-                    extraPrice: Joi.number().min(0).required()
+                    price: Joi.number().min(0).required()
                 }).label("PizzaComplement")
             }
         },
@@ -105,7 +105,7 @@ module.exports = [
                 }),
                 payload: Joi.object({
                     name: Joi.string().min(3).max(255),
-                    extraPrice: Joi.number().min(0)
+                    price: Joi.number().min(0)
                 }).label("UpdatePizzaComplement")
             }
         },
