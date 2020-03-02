@@ -10,6 +10,7 @@ import * as Joi from "@hapi/joi";
 import Logger from "../../utils/logger";
 import PizzaFlavorDatabaseModel from '../../model/database/pizza-flavor-database-model';
 import { OrderSources } from '../../enum/order-sources';
+import Axios from 'axios';
 
 function handleModel(x: any): String { 
     if (x) {
@@ -253,6 +254,23 @@ module.exports = [
                         pizzas: [
                             {
                                 "size": handleModel(await size.findOne({ description: /Grande/i })),
+                                "allowedFlavorTypes": PizzaFlavorTypes.Traditional,
+                                "complements": [
+                                    handleModel(await complement.findOne({ name: /catupiry/i }))
+                                ],
+                                "maxSliceCount": 2,
+                            }
+                        ],
+                        "name": "Promoção 1 pizza grande com borda de catupiry",
+                        "description": "2 Sabores tradicionais",
+                        "drinks": [],
+                        "price": 54.90,
+                        "highlighted": false
+                    },
+                    {
+                        pizzas: [
+                            {
+                                "size": handleModel(await size.findOne({ description: /Grande/i })),
                                 "allowedFlavorTypes": Object.values(PizzaFlavorTypes),
                                 "complements": [],
                                 "maxSliceCount": 2,
@@ -321,8 +339,8 @@ module.exports = [
 
                         // Get all the complements and price them
                         let complementPrice = 0;
-                        for (const complement of pizza.complements) {
-                            let selectedComplementPrice = (await complement.findById(complement).select({ price: 1 })).price
+                        for (const complementId of pizza.complements) {
+                            let selectedComplementPrice = (await complement.findById(complementId).select({ price: 1 })).price
                             complementPrice += selectedComplementPrice;
                         }
 
@@ -360,6 +378,85 @@ module.exports = [
 
                     await order.create(obj);
                 }
+
+                console.log("Took " + (Date.now() - startTime) + "ms");
+
+                return {
+                    message: "OK"
+                };
+            } catch(e) {
+                console.trace(e);
+                console.error(e);
+                return Boom.internal("Unable to reset the database!");
+            }
+        }
+    },
+    {
+        method: "GET",
+        path: "/api/insert-random-order",
+        options: {
+            description: "Inserts a random order",
+            tags: ["api", "Utility"],
+            validate: {
+                headers: Joi.object({
+                    authorization: Joi.string().default("Bearer 1234").required()
+                }).options({ allowUnknown: true })
+            }
+        },
+
+        handler: async function(request, h) {
+            try {
+                Logger.route(request);
+                let startTime = Date.now();
+
+                let customer = DatabaseController.instance.declaredList["Customer"] as Model<any>;
+                let branch =  DatabaseController.instance.declaredList["Branch"] as Model<any>;
+                let drink = DatabaseController.instance.declaredList["Drink"] as Model<any>;
+                let complement = DatabaseController.instance.declaredList["PizzaComplement"] as Model<any>;
+                let flavor = DatabaseController.instance.declaredList["PizzaFlavor"] as Model<any>;
+                let size = DatabaseController.instance.declaredList["PizzaSize"] as Model<any>;
+                let promotion = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
+
+                let obj = {
+                    "payment": {
+                        "method": {
+                            "type": "VR - Sodexo",
+                            "change": 0
+                        }
+                    },
+                    "promotions": [
+                        {
+                            "_id": handleModel(await promotion.findOne({ name: /Promoção 1 pizza grande com borda de catupiry/i })),
+                            "pizzas": [
+                                {
+                                    "flavors": [
+                                        handleModel(await flavor.findOne()),
+                                        handleModel(await flavor.findOne().skip(1)),
+                                        handleModel(await flavor.findOne().skip(2))
+                                    ],
+                                    "complements": Math.random() <= 0.5 ? [
+                                        handleModel(await complement.findOne()),
+                                        handleModel(await complement.findOne().skip(1))
+                                    ] : [
+                                        handleModel(await complement.findOne()),
+                                    ],
+                                    "_id": (await promotion.findOne({ name: /Promoção 1 pizza grande com borda de catupiry/i })).pizzas.find(x => x)._id,
+                                    "size": handleModel(await size.findOne({ })),
+                                    "observations": "Sem tomate"
+                                }
+                            ],
+                            "drinks": []
+                        }
+                    ],
+                    "drinks": Math.random() <= 0.5 ? [
+                        handleModel(await drink.findOne())
+                    ] : [],
+                    "customer": handleModel(await customer.findOne({ })),
+                    "branch": handleModel(await branch.findOne({ name: /matriz/i })),
+                    "source": "Outros"
+                };        
+                
+                await Axios.post("http://localhost:7070/api/order", obj, { headers: { Authorization: "Bearer 1234" } });
 
                 console.log("Took " + (Date.now() - startTime) + "ms");
 

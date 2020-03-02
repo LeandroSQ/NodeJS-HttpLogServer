@@ -39,6 +39,9 @@ export default class Logger {
             case "info":
                 fn = chalk.gray;
                 break;
+            case "socket":
+                fn = chalk.gray;
+                break;
         }
 
         return {

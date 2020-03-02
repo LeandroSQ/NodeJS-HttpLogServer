@@ -42,6 +42,7 @@ export default class OrderDatabaseModel implements DatabaseInjectable {
             branch: { type: mongoose.Schema.Types.ObjectId, ref: "Branch" },
 
             total: { type: Number, required: true },
+            closed: { type: Boolean, default: false },
 
             source: { type: String, enum: Object.values(OrderSources) },
             status: { type: String, enum: Object.values(OrderStatus) },

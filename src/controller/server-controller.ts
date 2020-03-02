@@ -1,3 +1,4 @@
+import { SocketController } from './socket-controller';
 import { DatabaseController } from './database-controller';
 // Imports
 import * as Hapi from "@hapi/hapi";
@@ -10,7 +11,6 @@ import Chalk from 'chalk';
 import { Agent } from 'http';
 
 export default class ServerController {
-
 
     // Define HAPI server related stuff
     private hapiServer: Hapi.Server = null;
@@ -26,6 +26,7 @@ export default class ServerController {
     private processController: ProcessShutdownController = null
     private injectableController: ServerInjectableController = null
     private databaseController: DatabaseController = null
+    private websocketController: SocketController = null
 
     //#region Controller setup
     private async setupProcessController() {
@@ -50,10 +51,16 @@ export default class ServerController {
         this.databaseController = DatabaseController.instance;
     }
 
+    private async setupWebSocketController() {
+        // Creates the controller instance
+        this.websocketController = SocketController.instance;
+    }
+
     private async setupControllers() {
         await this.setupProcessController();
         await this.setupInjectableController();
         await this.setupDatabaseController();
+        await this.setupWebSocketController();
     }
     //#endregion
 
@@ -69,6 +76,7 @@ export default class ServerController {
             // Notify injectables that the server has been created
             await this.injectableController.notifyServerCreated(this.hapiServer);
             await this.databaseController.notifyServerCreated(this.hapiServer);
+            await this.websocketController.notifyServerCreated(this.hapiServer);
         
             // Starts the server
             await this.hapiServer.start();
@@ -136,6 +144,7 @@ export default class ServerController {
             // Notify all the injectables that the server is to be disposed
             this.injectableController.notifyServerDisposed(this.hapiServer);
             this.databaseController.notifyServerDisposed(this.hapiServer);
+            this.websocketController.notifyServerDisposed(this.hapiServer);
 
             // Tries to stop the server
             this.hapiServer.stop()

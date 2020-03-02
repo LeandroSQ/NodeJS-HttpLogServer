@@ -1,3 +1,4 @@
+import { SocketController } from './../../controller/socket-controller';
 import { OrderSources } from './../../enum/order-sources';
 import { PaymentTypes } from './../../enum/payment-types';
 import { Schema } from 'mongoose';
@@ -5,9 +6,9 @@ import * as Boom from '@hapi/boom';
 import { Model } from 'mongoose';
 import { DatabaseController } from '../../controller/database-controller';
 import { ServerRoute } from "@hapi/hapi";
-import * as Joi from "@hapi/joi";
 import Logger from "../../utils/logger";
 import { OrderStatus } from '../../enum/order-status';
+const Joi = require("@hapi/joi").extend(require('@hapi/joi-date'));
 
 /* Utility functions */
 let calculatePizzaPrice = function (pizzaArray, pizzaComplementModel, pizzaFlavorModel) {
@@ -44,14 +45,50 @@ let calculateDrinkPrice = function (drinkArray, drinkModel) {
     return drinksPricing.reduce((a, b) => a + b.price, 0);// Sum all the drink pricing
 };
 
-let calculatePromotionPrice = function (promotionArray, promotionModel) {
-    let promotionPricing = promotionArray.map(async promotion => {
-        let price = (await promotionModel.findById(promotion._id).select({ price: 1 })).price;
-        promotion.price = price;
+let calculatePromotionPrice = async function (promotionArray, pizzaComplementModel, pizzaFlavorModel, promotionModel) {
+    let total = 0;
 
-        return promotion;
-    });
-    return promotionPricing.reduce((a, b) => a + b.price, 0);
+    for(const promotion of promotionArray) {
+        let promo = await promotionModel.findById(promotion._id);
+        let basePrice = promo.price;
+        let extraComplementsPrice = 0;
+        let extraFlavorsPrice = 0;
+
+        // Get all the complements and price them
+        for (const pizza of promotion.pizzas) {
+            // Finds the according promotion pizza definition
+            let promotionPizzaDefinition = promo.pizzas.find(x => x._id.toString() === pizza._id.toString());
+            let totalExtraComplementPrice = 0;
+            let totalExtraFlavorPrice = 0;
+
+            // Query all the complements that aren't on the pizza definition
+            let extraComplements = pizza.complements.filter(complementId => promotionPizzaDefinition.complements.find(x => x._id.toString() === complementId));
+
+            // Queries the complement extra-price and append it to the internal TotalExtraComplementPrice and the global ExtraComplementPrice
+            for (const extraComplementId of extraComplements) {
+                let complementPrice = (await pizzaComplementModel.findById(extraComplementId).select({ price: 1 })).price;
+                totalExtraComplementPrice += complementPrice;
+            }
+            extraComplementsPrice += totalExtraComplementPrice;
+
+            // Get all the flavors models referenced by this pizza
+            let flavors = (await Promise.all(pizza.flavors.map(async x => await pizzaFlavorModel.findById(x)))) as Array<any>;
+            // Query all the flavors that aren't on the pizza definition
+            let extraFlavors = flavors.filter(x => promotionPizzaDefinition.allowedFlavorTypes.indexOf(x.type) === -1);
+
+            // Queries the complement extra-price and append it to the internal TotalExtraFlavorPrice and the global ExtraFlavorPrice
+            for (const extraFlavor of extraFlavors) {
+                let flavorPrice = extraFlavor.price;
+                totalExtraFlavorPrice += flavorPrice;
+            }
+            extraFlavorsPrice += totalExtraFlavorPrice;
+        }     
+        
+        promotion.price = basePrice + extraComplementsPrice + extraFlavorsPrice;
+        total += promotion.price;
+    }
+
+    return total;
 };
 
 module.exports = [
@@ -113,15 +150,6 @@ module.exports = [
 
                     source: Joi.string().valid.apply(Joi, Object.values(OrderSources)).required(),
 
-                    pizzas: Joi.array().items(Joi.object({
-                        _id: Joi.string().min(10).max(128).required(),
-                        size: Joi.string().min(10).max(128).required(),
-                        flavors: Joi.array().items(Joi.string().min(10).max(128)).required(),
-                        complements: Joi.array().items(Joi.string().min(10).max(128)).required(),
-                        observations: Joi.string().min(0).max(250)
-                        // NEED TO BE CALCULATED BY THE API - price: Joi.number().min(0).required()
-                    }).label("PizzaItem")).required(),
-
                     drinks: Joi.array().items(Joi.object({
                         _id: Joi.string().min(10).max(128).required(),
                         name: Joi.string().min(3).max(255).required()
@@ -132,6 +160,7 @@ module.exports = [
                         _id: Joi.string().min(10).max(128).required(),
 
                         pizzas: Joi.array().items(Joi.object({
+                            _id: Joi.string().min(10).max(128),
                             size: Joi.string().min(10).max(128).required(),
                             flavors: Joi.array().items(Joi.string().min(10).max(128)).required(),
                             complements: Joi.array().items(Joi.string().min(10).max(128)).required(),
@@ -179,13 +208,13 @@ module.exports = [
                 }                 
                 
                 // Calculate pizzas price                
-                let pizzasPrice = calculatePizzaPrice(object.pizzas, pizzaComplementModel, pizzaFlavorModel);
+                //let pizzasPrice = calculatePizzaPrice(object.pizzas, pizzaComplementModel, pizzaFlavorModel);
                 // Calculate drinks price               
                 let drinksPrice = calculateDrinkPrice(object.drinks, drinkModel);
                 // Calculate promotions price               
-                let promotionsPrice = calculatePromotionPrice(object.promotions, promotionModel);
+                let promotionsPrice = await calculatePromotionPrice(object.promotions, pizzaComplementModel, pizzaFlavorModel, promotionModel);
                 // Calculate orders total price
-                let orderTotalPrice = promotionsPrice + drinksPrice + pizzasPrice;
+                let orderTotalPrice = promotionsPrice + drinksPrice;
 
                 // BUSINESS LOGIC: Check if the order has at least one item
                 if (orderTotalPrice <= 0) {
@@ -194,11 +223,14 @@ module.exports = [
 
                 // Set the status of the order
                 object.status = OrderStatus.Processed;
+                object.total = orderTotalPrice;
 
                 // Insert into the database
                 let document = await model.create(object);
     
                 if (document) {
+                    SocketController.instance.emit("newOrder", document);
+
                     // Everything is fine :)
                     return {
                         message: "OK",
@@ -229,16 +261,49 @@ module.exports = [
                     id: Joi.string().min(10).max(128).required() 
                 }),
                 payload: Joi.object({
-                    promotions: Joi.array().items(Joi.string().min(10).max(128)),
-                    drinks: Joi.array().items(Joi.string().min(10).max(128)),
+                    branch: Joi.string().min(10).max(128).default(null),
                     customer: Joi.string().min(10).max(128),
+
+                    code: Joi.number().min(0),
                     total: Joi.number().min(0),
                     status: Joi.string().valid.apply(Joi, Object.values(OrderStatus)),
+                    createdAt: Joi.date().utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
+
+                    source: Joi.string().valid.apply(Joi, Object.values(OrderSources)),
+                    closed: Joi.boolean(),
+
+                    drinks: Joi.array().items(Joi.object({
+                        _id: Joi.string().min(10).max(128),
+                        name: Joi.string().min(3).max(255),
+                        price: Joi.number().min(0)
+                    }).label("UpdateDrinkItem")),
+
+                    promotions: Joi.array().items(Joi.object({
+                        _id: Joi.string().min(10).max(128),
+
+                        pizzas: Joi.array().items(Joi.object({
+                            _id: Joi.string().min(10).max(128),
+                            size: Joi.string().min(10).max(128),
+                            flavors: Joi.array().items(Joi.string().min(10).max(128)),
+                            complements: Joi.array().items(Joi.string().min(10).max(128)),
+                            observations: Joi.string().min(0).max(250),
+                            price: Joi.number().min(0)
+                        }).label("UpdatePizzaItem")),
+
+                        drinks: Joi.array().items(Joi.object({
+                            _id: Joi.string().min(10).max(128),
+                            name: Joi.string().min(3).max(255),
+                            price: Joi.number().min(0)
+                        }).label("UpdateDrinkItem")),
+
+                        price: Joi.number().min(0)
+                    }).label("UpdatePromotionItem")),
+
                     payment: {
                         method: Joi.object({
                             type: Joi.string().valid.apply(Joi, Object.values(PaymentTypes)),
                             change: Joi.number()
-                        }).label("UpdatePaymentMethod")
+                        }).label("UpdatePaymentMethod")                        
                     }
                 }).label("UpdateOrder")
             }
