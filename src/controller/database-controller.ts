@@ -101,7 +101,8 @@ export class DatabaseController {
                 if (Config.mode === "prod") {
                     await Mongoose.connect(`mongodb://${Config.database.user}:${Config.database.password}@${Config.database.host}/${Config.database.db_name}`, { useNewUrlParser: true, useUnifiedTopology: true });
                 } else {
-                    await Mongoose.connect(`mongodb://localhost:27017/${Config.database.db_name}`, { useNewUrlParser: true, useUnifiedTopology: true });
+                    // await Mongoose.connect(`mongodb://localhost:27017/${Config.database.db_name}`, { useNewUrlParser: true, useUnifiedTopology: true });
+                    await Mongoose.connect(`mongodb+srv://admin:admin@cluster0-pyrzy.gcp.mongodb.net/test?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
                 }         
     
                 this.mongoose = Mongoose.connection;

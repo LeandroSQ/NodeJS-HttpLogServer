@@ -6,6 +6,7 @@ import { Server, Socket } from "socket.io";
 import { DatabaseController } from '../controller/database-controller';
 import { OrderStatus } from '../enum/order-status';
 import chalk = require('chalk');
+import Logger from '../utils/logger';
 
 export default class OrderBoardSocketInjectable implements SocketInjectable {
     
@@ -20,37 +21,34 @@ export default class OrderBoardSocketInjectable implements SocketInjectable {
      *  This method will be called whenever a socket connects
      ***/
     async onSocketConnected(controller: SocketController, socket: Socket): Promise<any> {
-        socket.on("getOrders", async (args) => {
-            // Gets the database order model
-            let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
+        socket.on("getOrders", async (branchId, callback) => {
+            Logger.log(["server", "socket"], `Socket ${socket.id} sent 'getOrders'`);
+
+            try {
+                // Gets the database order model
+                let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
+
+                // Finds the running orders targeted to the given branch
+                let orders = await model.find({ 
+                    closed: false,
+                    branch: branchId,
+                    status: { $in: [
+                        OrderStatus.Processed,
+                        OrderStatus.InTransportation,
+                        OrderStatus.InPreparation,
+                        OrderStatus.Confirmed,
+                        OrderStatus.Canceled
+                    ] },
+                });
+
+                // Send to the socket
+                callback(null, orders);
+            } catch (e) {
+                callback(e, null);
+                Logger.log(["server", "socket", "error"], "Error while fetching order list!\n'" + e + "'");
+                console.trace(e);
+            }
             
-            // Finds the running orders targeted to the given branch
-            let orders = await model.find({ 
-                closed: false,
-                branch: args.branch,
-                status: { $in: [
-                    OrderStatus.Processed,
-                    OrderStatus.InTransportation,
-                    OrderStatus.InPreparation,
-                    OrderStatus.Confirmed,
-                    OrderStatus.Canceled
-                ] },
-            }).populate({
-                path: "promotions",
-                populate: {
-                    path: "pizzas",
-                    populate: [
-                        { path: "size" },
-                        { path: "flavors" },
-                        { path: "complements" },
-                    ]
-                }
-            });
-
-            console.log(orders);
-
-            // Send to the socket
-            socket.emit("getOrdersResponse", orders);
         });
     }
 
