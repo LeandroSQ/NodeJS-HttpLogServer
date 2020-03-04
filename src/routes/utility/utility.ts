@@ -293,7 +293,15 @@ module.exports = [
                 let order = DatabaseController.instance.declaredList["Order"] as Model<any>;
                 await order.deleteMany({ });                
 
-                for (var i = 0; i < 10; i++) {
+                let customersCache = await customer.find({ });
+                let branchesCache = await branch.find({ });
+                let drinksCache = await drink.find({ });
+                let promotionsCache = await promotion.find({ });
+                let flavorsCache = await flavor.find({ });
+                let complementsCache = await complement.find({ });
+
+                let promises = [];
+                for (var i = 0; i < 100; i++) {
                     let statuses = Object.values(OrderStatus);
                     let status = statuses[Math.floor(Math.random() * statuses.length)];
 
@@ -303,36 +311,35 @@ module.exports = [
                     let paymentTypes = Object.values(PaymentTypes);
                     let paymentType = paymentTypes[Math.floor(Math.random() * paymentTypes.length)];
 
-                    let customerCount = await customer.countDocuments({ });
-                    let customerIndex = Math.floor(Math.random() * (customerCount));
-                    let selectedCustomer = await customer.findOne().skip(customerIndex);
+                    let selectedCustomer = customersCache[Math.floor(Math.random() * customersCache.length)];
+                    
+                    let selectedBranch = branchesCache[Math.floor(Math.random() * branchesCache.length)];
 
-                    let branchCount = await branch.countDocuments({ });
-                    let branchIndex = Math.floor(Math.random() * (branchCount));
-                    let selectedBranch = await branch.findOne().skip(branchIndex);
-
-                    let drinkCount = await drink.countDocuments({ });
-                    let drinkIndex = Math.floor(Math.random() * (drinkCount));                    
                     let selectedDrinks = [];
                     if (Math.random() > 0.5) {
-                        let d = await drink.findOne({ }).skip(drinkIndex);
+                        let drinkIndex = Math.floor(Math.random() * drinksCache.length);
+
+                        let d = drinksCache[drinkIndex];
                         if (d) selectedDrinks.push(d);
                     }
                     
-                    let promotionCount = await promotion.countDocuments({ });
-                    let promotionIndex = Math.floor(Math.random() * (promotionCount));
-                    let selectedPromotion = await promotion.findOne({}).skip(promotionIndex);  
-                    let drinks = selectedPromotion.drinks;
-                    let pizzas = []
+                    let selectedPromotion = promotionsCache[Math.floor(Math.random() * promotionsCache.length)]  
+                                        
+                    let drinks = [];
+                    for (const drinkItemId of selectedPromotion.drinks) {
+                        drinks.push(drinksCache.find (x => x._id.toString() === drinkItemId));
+                    }
+
+                    let pizzas = [];
                     for (const pizza of selectedPromotion.pizzas) {
                         let flavors = [];
                         let flavorPrice = 0;
                         for(const flavorType of pizza.allowedFlavorTypes) {
                             if (flavors.length >= pizza.maxSliceCount) break;
 
-                            let flavorCount = await flavor.countDocuments({ type: flavorType });
-                            let flavorIndex = Math.floor(Math.random() * flavorCount);
-                            let selectedFlavor = await flavor.findOne({ type: flavorType }).select({ _id: 1, price: 1 }).skip(flavorIndex);
+                            let filteredFlavors = flavorsCache.filter(x => x.type === flavorType);
+                            let selectedFlavor = filteredFlavors[Math.floor(Math.random() * filteredFlavors.length)];
+                            
                             flavorPrice += selectedFlavor.price;
                             flavors.push(selectedFlavor._id);
                         }
@@ -340,8 +347,9 @@ module.exports = [
                         // Get all the complements and price them
                         let complementPrice = 0;
                         for (const complementId of pizza.complements) {
-                            let selectedComplementPrice = (await complement.findById(complementId).select({ price: 1 })).price
-                            complementPrice += selectedComplementPrice;
+                            let c = complementsCache.find(x => x._id.toString() === complementId);
+                            let price = c ? c.price : 0
+                            complementPrice += price || 0;
                         }
 
                         pizzas.push({
@@ -355,7 +363,7 @@ module.exports = [
 
                     let total = selectedPromotion.price + pizzas.reduce((a, b) => a + b.price, 0)
 
-                    let obj: any = {
+                    let obj: any = {                        
                         "promotions": {
                             _id: selectedPromotion._id,
                             pizzas: pizzas,
@@ -376,10 +384,13 @@ module.exports = [
                         }
                     };
 
-                    await order.create(obj);
+                    promises.push(order.create(obj));
                 }
 
-                console.log("Took " + (Date.now() - startTime) + "ms");
+                Logger.log(["server", "debug"], "'/api/reset-models' pre-promise Took " + (Date.now() - startTime) + "ms and got " + promises.length + " promises");
+                await Promise.all(promises);
+
+                Logger.log(["server", "debug"], "'/api/reset-models' Took " + (Date.now() - startTime) + "ms");
 
                 return {
                     message: "OK"
@@ -447,9 +458,9 @@ module.exports = [
                             ],
                             "drinks": []
                         }
-                    ],
+                    ],                    
                     "drinks": Math.random() <= 0.5 ? [
-                        handleModel(await drink.findOne())
+                        await drink.findOne({ }, { id: 1, name: 1 })
                     ] : [],
                     "customer": handleModel(await customer.findOne({ })),
                     "branch": handleModel(await branch.findOne({ name: /matriz/i })),
@@ -464,8 +475,8 @@ module.exports = [
                     message: "OK"
                 };
             } catch(e) {
-                console.trace(e);
-                console.error(e);
+                // console.trace(e);
+                // console.error(e);
                 return Boom.internal("Unable to reset the database!");
             }
         }

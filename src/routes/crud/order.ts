@@ -34,18 +34,19 @@ let calculatePizzaPrice = function (pizzaArray, pizzaComplementModel, pizzaFlavo
     return pricing.reduce((a, b) => a + b.price, 0);
 };
 
-let calculateDrinkPrice = function (drinkArray, drinkModel) {
-    let drinksPricing = drinkArray.map(async drink => {
+let calculateDrinkPrice = async function (drinkArray, drinkModel) {
+    let total = 0;
+    for (const drink of drinkArray) {
         let price = (await drinkModel.findById(drink).select({ price: 1 })).price;
         drink.price = price;
 
-        return drink;
-    });
+        total += drink.price;
+    }    
 
-    return drinksPricing.reduce((a, b) => a + b.price, 0);// Sum all the drink pricing
+    return total;
 };
 
-let calculatePromotionPrice = async function (promotionArray, pizzaComplementModel, pizzaFlavorModel, promotionModel) {
+let calculatePromotionPrice = async function (promotionArray, drinkModel, pizzaComplementModel, pizzaFlavorModel, promotionModel) {
     let total = 0;
 
     for(const promotion of promotionArray) {
@@ -149,6 +150,7 @@ module.exports = [
                     customer: Joi.string().min(10).max(128).required(),
 
                     source: Joi.string().valid.apply(Joi, Object.values(OrderSources)).required(),
+                    reasonText: Joi.string().min(0).max(255).default(null).allow(null),
 
                     drinks: Joi.array().items(Joi.object({
                         _id: Joi.string().min(10).max(128).required(),
@@ -210,9 +212,9 @@ module.exports = [
                 // Calculate pizzas price                
                 //let pizzasPrice = calculatePizzaPrice(object.pizzas, pizzaComplementModel, pizzaFlavorModel);
                 // Calculate drinks price               
-                let drinksPrice = calculateDrinkPrice(object.drinks, drinkModel);
+                let drinksPrice = await calculateDrinkPrice(object.drinks, drinkModel);
                 // Calculate promotions price               
-                let promotionsPrice = await calculatePromotionPrice(object.promotions, pizzaComplementModel, pizzaFlavorModel, promotionModel);
+                let promotionsPrice = await calculatePromotionPrice(object.promotions, drinkModel, pizzaComplementModel, pizzaFlavorModel, promotionModel);
                 // Calculate orders total price
                 let orderTotalPrice = promotionsPrice + drinksPrice;
 
@@ -229,6 +231,7 @@ module.exports = [
                 let document = await model.create(object);
     
                 if (document) {
+                    // Update the order board on the dashboard
                     SocketController.instance.emit("newOrder", document);
 
                     // Everything is fine :)
@@ -261,7 +264,8 @@ module.exports = [
                     id: Joi.string().min(10).max(128).required() 
                 }),
                 payload: Joi.object({
-                    branch: Joi.string().min(10).max(128).default(null),
+                    branch: Joi.string().min(10).max(128),
+                    reasonText: Joi.string().min(0).max(255).allow(null),
                     customer: Joi.string().min(10).max(128),
 
                     code: Joi.number().min(0),

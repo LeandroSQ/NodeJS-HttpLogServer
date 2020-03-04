@@ -2,7 +2,7 @@
     "mode": "dev",
     "database": {
         "port": "7071",
-        "host": "127.0.0.1",
+        "host": "cluster0-pyrzy.gcp.mongodb.net",
         "db_name": "pizzaria-do-bosque",
         "user": "admin",
         "password": "admin"

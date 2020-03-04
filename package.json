@@ -29,6 +29,7 @@
     "mongoose": "^5.8.11",
     "mongoose-sequence": "^5.2.2",
     "nodemon": "^2.0.1",
+    "short-objectid": "^4.0.0",
     "socket.io": "^2.3.0",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"
@@ -44,6 +45,7 @@
     "@types/hapi__vision": "^5.5.1",
     "@types/mongoose": "^5.7.0",
     "@types/node": "^12.12.17",
+    "@types/shortid": "0.0.29",
     "hapi-swagger": "^11.1.0"
   }
 }

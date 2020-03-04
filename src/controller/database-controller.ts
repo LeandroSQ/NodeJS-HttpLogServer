@@ -125,7 +125,7 @@ export class DatabaseController {
 
     private defineModels() {
         return new Promise(async (resolve, reject) => {
-            Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);            
+            Logger.log(["server", "database"], `Injecting "${this.modelList.length} models"...`);
            
             try {
                 for (const injectable of this.modelList) {
@@ -142,6 +142,32 @@ export class DatabaseController {
                 reject(e);
             } 
         });
+    }
+
+    private async injectAutoIncrementModel() {
+        const model = this.declaredList["AutoIncrement"];
+
+        async function defineAutoIncrementModel(collection: String): Promise<Boolean>{
+            let autoIncrementInstance = await model.findOne({ "name": collection });
+    
+            if (!autoIncrementInstance) {
+                await model.create({ name: collection, count: 1 });
+                return true;
+            } 
+    
+            return false;
+        };
+
+        let totalAutoIncrementInstancesCreated = 0;
+        for (const injectable in this.declaredList) {
+            if (injectable === "AutoIncrement") continue;
+
+            if (await defineAutoIncrementModel(injectable)) {
+                totalAutoIncrementInstancesCreated++;
+            }
+        }          
+
+        Logger.log(["server", "database"], `Created ${totalAutoIncrementInstancesCreated} auto-increment instances!`);
     }
 
     /***
@@ -172,6 +198,7 @@ export class DatabaseController {
      ***/
     async notifyServerStarted(server: Server) {
         await this.connectToDatabaseServer();
+        await this.injectAutoIncrementModel();
     }
 
     /***
