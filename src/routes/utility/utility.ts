@@ -313,7 +313,10 @@ module.exports = [
 
                     let selectedCustomer = customersCache[Math.floor(Math.random() * customersCache.length)];
                     
-                    let selectedBranch = branchesCache[Math.floor(Math.random() * branchesCache.length)];
+                    let selectedBranch = null;
+                    while(!selectedBranch) {
+                        selectedBranch = branchesCache[Math.floor(Math.random() * branchesCache.length)];
+                    }
 
                     let selectedDrinks = [];
                     if (Math.random() > 0.5) {
@@ -327,7 +330,8 @@ module.exports = [
                                         
                     let drinks = [];
                     for (const drinkItemId of selectedPromotion.drinks) {
-                        drinks.push(drinksCache.find (x => x._id.toString() === drinkItemId));
+                        let drink = drinksCache.find (x => x._id.toString() === drinkItemId);
+                        if (drink) drinks.push(drink);
                     }
 
                     let pizzas = [];
@@ -361,7 +365,7 @@ module.exports = [
                         });
                     }
 
-                    let total = selectedPromotion.price + pizzas.reduce((a, b) => a + b.price, 0)
+                    let total = selectedPromotion.price + selectedDrinks.reduce((a, b) => a + b.price, 0)
 
                     let obj: any = {                        
                         "promotions": {
@@ -383,6 +387,9 @@ module.exports = [
                             }
                         }
                     };
+
+                    if (status === 'Cancelado')
+                        obj.cancelReason = "Cancelamento do lado do cliente";
 
                     promises.push(order.create(obj));
                 }
