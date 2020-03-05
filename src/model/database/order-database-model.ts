@@ -50,7 +50,7 @@ export default class OrderDatabaseModel implements DatabaseInjectable {
 
             total: { type: Number, required: true },
             closed: { type: Boolean, default: false },
-            reasonText: { type: String, default: null },
+            cancelReason: { type: String, default: null },
 
             source: { type: String, enum: Object.values(OrderSources) },
             status: { type: String, enum: Object.values(OrderStatus) },

@@ -150,7 +150,7 @@ module.exports = [
                     customer: Joi.string().min(10).max(128).required(),
 
                     source: Joi.string().valid.apply(Joi, Object.values(OrderSources)).required(),
-                    reasonText: Joi.string().min(0).max(255).default(null).allow(null),
+                    cancelReason: Joi.string().min(0).max(255).default(null).allow(null),
 
                     drinks: Joi.array().items(Joi.object({
                         _id: Joi.string().min(10).max(128).required(),
@@ -265,7 +265,7 @@ module.exports = [
                 }),
                 payload: Joi.object({
                     branch: Joi.string().min(10).max(128),
-                    reasonText: Joi.string().min(0).max(255).allow(null),
+                    cancelReason: Joi.string().min(0).max(255).allow(null),
                     customer: Joi.string().min(10).max(128),
 
                     code: Joi.number().min(0),
