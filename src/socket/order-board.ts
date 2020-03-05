@@ -50,6 +50,17 @@ export default class OrderBoardSocketInjectable implements SocketInjectable {
             }
             
         });
+
+        socket.on("onConfirmOrder", async (order, callback) => {
+            // Gets the database order model
+            let model = DatabaseController.instance.declaredList["Order"] as Model<any>;
+            let document = await model.findById(order._id, { status: 1 });
+            if (document.status !== "Confirmado") {
+                callback(null);
+            } else {
+                callback (order);
+            }
+        });
     }
 
     /***
