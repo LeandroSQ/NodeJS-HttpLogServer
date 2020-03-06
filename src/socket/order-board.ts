@@ -39,7 +39,7 @@ export default class OrderBoardSocketInjectable implements SocketInjectable {
                         OrderStatus.Confirmed,
                         OrderStatus.Canceled
                     ] },
-                });
+                }).populate("customer");
 
                 // Send to the socket
                 callback(null, orders);
