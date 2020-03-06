@@ -97,7 +97,14 @@ class RouteInjector implements ServerInjectable {
         //     }
         // })
         
-        server.route(this.routeList);
+        for (let x of this.routeList) {
+            try {
+                server.route(x);
+            } catch (e) {
+                console.trace(e);
+                console.log("ERRO NO ARQUIVO " + JSON.stringify(x));
+            }
+        }
     }
 
     /* This method will be called whenever the server gets started */

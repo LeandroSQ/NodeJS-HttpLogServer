@@ -122,7 +122,7 @@ export default class ServerController {
     /* Event: called on any error has occurred */
     private onError(request: Hapi.Request, h: Hapi.ResponseToolkit, error?: Error): Promise<object> {
         return new Promise((resolve, reject) => {
-            if (Configuration.mode === 'prod') {// NODE_ENV could also be applied here
+            if (Config.mode === 'prod') {// NODE_ENV could also be applied here
                 // In production, log a limited error message and throw the default Bad Request error.
                 Logger.log("error", "Validation error: " + error.message);
                 throw Boom.badRequest(`Invalid request payload input`);

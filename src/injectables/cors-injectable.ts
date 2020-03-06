@@ -18,7 +18,8 @@ class CorsInjectable implements ServerInjectable {
             
             // depending on whether we have a boom or not,
             // headers need to be set differently.
-            var response = request.response.isBoom ? request.response.output : request.response
+            let r = request.response as any;
+            let response = r.isBoom ? r.output : r
             
             response.headers["Access-Control-Allow-Origin"] = request.headers.origin;
             response.headers['access-control-allow-credentials'] = 'true'
