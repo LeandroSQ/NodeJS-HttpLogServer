@@ -1,0 +1,22 @@
+{
+    "mode": "prod",
+    "database": {
+        "port": "7071",
+        "host": "cluster0-pyrzy.gcp.mongodb.net",
+        "db_name": "pizzaria-do-bosque",
+        "user": "admin",
+        "password": "admin"
+    },
+    "websocket": {
+        "port": 8000
+    },
+    "server": {
+        "port": 3000,
+        "host": "127.0.0.1"
+    },
+    "tunnel": {
+        "active": false,
+        "subdomain": "pizzariadobosque"
+    },
+    "version": "1.0.0"
+}

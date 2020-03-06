@@ -40,6 +40,7 @@ export default class Logger {
                 fn = chalk.gray;
                 break;
             case "socket":
+            case "tunnel":
                 fn = chalk.gray;
                 break;
         }

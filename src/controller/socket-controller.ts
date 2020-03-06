@@ -6,7 +6,7 @@ import * as SocketIO from 'socket.io';
 import SocketInjectable from "../model/socket-injectable";
 // import * as Mongoose from "mongoose";
 import Mongoose = require("mongoose");
-import * as Config from "../config.json";
+import Config from "../utils/configuration";
 import ServerInjectable from "../model/server-injectable";
 
 /* Define the controller */

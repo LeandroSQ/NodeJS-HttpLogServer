@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --inspect --respawn --clear --exit-child --transpileOnly src/main.ts",
     "build": "tsc",
+    "start": "ts-node-dev --respawn --exit-child src/main.ts",
     "prod": "npm run build && node dist/Main.js",
     "test": "tsc && lab --assert @hapi/code --coverage"
   },
@@ -20,19 +21,21 @@
     "@hapi/joi-date": "^2.0.1",
     "@hapi/vision": "^5.5.4",
     "@types/axios": "^0.14.0",
+    "@types/localtunnel": "^2.0.0",
     "@types/socket.io": "^2.1.4",
     "axios": "^0.19.2",
     "chalk": "^3.0.0",
     "hapi-auth-bearer-token": "^6.1.2",
     "hapi-cors": "^1.0.3",
     "hapi-oauth2-server-plugin": "^0.4.0",
+    "localtunnel": "^2.0.0",
     "mongoose": "^5.8.11",
     "mongoose-sequence": "^5.2.2",
     "nodemon": "^2.0.1",
     "short-objectid": "^4.0.0",
     "socket.io": "^2.3.0",
     "ts-node": "^8.5.4",
-    "typescript": "^3.7.3"
+    "typescript": "^3.8.3"
   },
   "devDependencies": {
     "@hapi/code": "^7.0.0",

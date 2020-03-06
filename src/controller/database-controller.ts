@@ -5,7 +5,7 @@ import { Server } from '@hapi/hapi';
 import DatabaseInjectable from "../model/database-injectable";
 // import * as Mongoose from "mongoose";
 import Mongoose = require("mongoose");
-import * as Config from "../config.json";
+import Config from "../utils/configuration";
 
 /* Define the controller */
 export class DatabaseController {

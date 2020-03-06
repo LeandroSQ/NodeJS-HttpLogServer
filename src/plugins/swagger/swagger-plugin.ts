@@ -1,7 +1,7 @@
 import * as Inert from "@hapi/inert";
 import * as Vision from "@hapi/vision";
 import * as Swagger from "hapi-swagger";
-import * as Configuration from "../../config.json";
+import Config from "../../utils/configuration";
 import Hapi from "@hapi/hapi";
 
 const options: Swagger.RegisterOptions = {
@@ -10,7 +10,7 @@ const options: Swagger.RegisterOptions = {
     expanded: "none",
     info: {
         title: "Test API Documentation",
-        version: Configuration.version
+        version: Config.version
     }               
 };
 

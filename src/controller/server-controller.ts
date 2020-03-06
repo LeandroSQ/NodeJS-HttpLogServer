@@ -3,7 +3,7 @@ import { DatabaseController } from './database-controller';
 // Imports
 import * as Hapi from "@hapi/hapi";
 import * as Boom from '@hapi/boom';
-import * as Configuration from "../config.json";
+import Config from "../utils/configuration";
 import ServerInjectableController from "./injectable-controller";
 import { ProcessShutdownController } from './process-shutdown-controller';
 import Logger from "../utils/logger";
@@ -15,8 +15,8 @@ export default class ServerController {
     // Define HAPI server related stuff
     private hapiServer: Hapi.Server = null;
     private serverConfig: Hapi.ServerOptions = {
-        host: Configuration.server.host,
-        port: Configuration.server.port,
+        host: Config.server.host,
+        port: Config.server.port,
         routes: {
             validate: { failAction: this.onError },
         }
@@ -44,6 +44,7 @@ export default class ServerController {
         this.injectableController.inject(require("./../routes/injector"));// Inject the routes
         this.injectableController.inject(require("./../injectables/auth-injectable"));// Inject the token manager
         this.injectableController.inject(require("./../injectables/cors-injectable"));// Inject the cors manager
+        this.injectableController.inject(require("./../injectables/tunnel-injectable"));// Inject the tunnel manager
     }
 
     private async setupDatabaseController() {
@@ -68,6 +69,8 @@ export default class ServerController {
         return new Promise(async (resolve, reject) => {
             // Setup all configured controllers
             await this.setupControllers();
+
+            Logger.log(["server"], `Running configuration '${Config.mode}'`);
 
             // Creates the server with the configuration from the provided .json file
             // And enables the custom error logging strategy
