@@ -27,14 +27,15 @@ module.exports = [
 
                 let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
 
+                // FIXME: This isn't populating the pizzas array
                 let promotions = await model.find({ })
-                                            .populate({
+                                            /* .populate({
                                                 path: "pizzas",
                                                 populate: [
                                                     { path: "size" },
                                                     { path: "complements" }
                                                 ]
-                                            })
+                                            }) */
                                             .populate("drinks");
 
                 if (promotions) {

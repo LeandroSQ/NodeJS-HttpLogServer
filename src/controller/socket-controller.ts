@@ -2,10 +2,11 @@ import * as FileSystem from "fs";
 import * as Path from "path";
 import Logger from "../utils/logger";
 import { Server } from '@hapi/hapi';
-import * as SocketIO from 'socket.io';
+import SocketIO from 'socket.io';
 import SocketInjectable from "../model/socket-injectable";
 // import * as Mongoose from "mongoose";
 import Mongoose = require("mongoose");
+import Hapi = require("hapi");
 import Config from "../utils/configuration";
 import ServerInjectable from "../model/server-injectable";
 
@@ -92,10 +93,27 @@ export class SocketController {
         }
     }
     
-    private async startWebSocketServer() {
+    /***
+     * Adds the provided injectable to the internal list
+     * 
+     * @param injectable The provided injectable
+     ***/
+    inject(injectable: SocketInjectable | any): void {
+        if (injectable && injectable.default)
+            this.injectableList.push(injectable.default);
+        else
+            this.injectableList.push(injectable);
+    }
+
+    /***
+     * Notify all added injectables that the server has been created
+     * 
+     * @param server The running server instance
+     ***/
+    async notifyServerCreated(server: Server): Promise<any>{
         // Starts the server socket
-        this.server = SocketIO.listen(Config.websocket.port);
-        Logger.log(["server", "socket"], `Socket server started at port '${Config.websocket.port}'`);
+        this.server = SocketIO(server.listener)
+        Logger.log(["server", "socket"], `Socket server started at port '${Config.server.port}'`);
 
         // Propague the event to all the injectables
         this.injectableList.forEach(x => x.onServerCreated(this));
@@ -121,27 +139,6 @@ export class SocketController {
             // Propague the event to all the injectables
             this.injectableList.forEach(x => x.onSocketConnected(this, socket));
         });
-    }
-
-    /***
-     * Adds the provided injectable to the internal list
-     * 
-     * @param injectable The provided injectable
-     ***/
-    inject(injectable: SocketInjectable | any): void {
-        if (injectable && injectable.default)
-            this.injectableList.push(injectable.default);
-        else
-            this.injectableList.push(injectable);
-    }
-
-    /***
-     * Notify all added injectables that the server has been created
-     * 
-     * @param server The running server instance
-     ***/
-    async notifyServerCreated(server: Server): Promise<any>{
-        await this.startWebSocketServer();
     }
 
     /***

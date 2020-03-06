@@ -7,11 +7,8 @@
         "user": "admin",
         "password": "admin"
     },
-    "websocket": {
-        "port": 7072
-    },
     "server": {
-        "port": 8080,
+        "port": 7070,
         "host": "127.0.0.1"
     },
     "tunnel": {
