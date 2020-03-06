@@ -57,6 +57,57 @@ module.exports = [
         }
     },
     {
+        method: "GET",
+        path: "/api/promotion/{id}",
+        options: {
+            description: "Lists one promotion",
+            tags: ["api", "Promotion"],
+            validate: {
+                headers: Joi.object({
+                    authorization: Joi.string().default("Bearer 1234").required()
+                }).options({ allowUnknown: true }),
+                params: Joi.object({
+                    id: Joi.string().min(10).max(128).required() 
+                }),
+            }
+        },
+
+        handler: async function(request, h) {
+            try {
+                Logger.route(request);
+
+                let model = DatabaseController.instance.declaredList["Promotion"] as Model<any>;
+
+                let promotions = await model.findById(request.params.id)
+                                            .populate({
+                                                path: "pizzas",
+                                                populate: [
+                                                    { path: "size" },
+                                                    { path: "complements" }
+                                                ]
+                                            })
+                                            .populate("drinks");
+
+                if (promotions) {
+                    // If we've got a valid customer from the database
+                    return {
+                        message: "OK",
+                        promotions: promotions
+                    };
+                } else {
+                    // If we haven't found any customer with that phone
+                    return {
+                        message: "Couldn't find any pizza-promotion on the database",
+                        promotions: []
+                    };
+                }
+            } catch(e) {
+                console.trace(e);
+                return Boom.internal("Unable to search pizza-promotion on database!");
+            }
+        }
+    },
+    {
         method: "POST",
         path: "/api/promotion",
         options: {
