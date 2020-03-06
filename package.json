@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --inspect --respawn --clear --exit-child --transpileOnly src/main.ts",
     "build": "tsc",
-    "start": "ts-node-dev --respawn --exit-child src/main.ts",
+    "start": "npm install & npm run build && node dist/Main.js",
     "prod": "npm run build && node dist/Main.js",
     "test": "tsc && lab --assert @hapi/code --coverage"
   },
