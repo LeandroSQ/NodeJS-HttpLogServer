@@ -80,7 +80,7 @@ app.post("/api/setLogApp", (req, res) => {
         let body = JSON.stringify(req.body, 1, 2);
     
         let fileName = `${uuid.v4()}.log`;    
-        let folderPath = `${__dirname}/logs/`;
+        let folderPath = `${__dirname}/log files/`;
         let filePath = `${folderPath}${fileName}`;
     
         if (!fs.existsSync(folderPath)) {
