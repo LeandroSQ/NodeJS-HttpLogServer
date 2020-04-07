@@ -1,0 +1,2 @@
+nodemon main.js
+pause
