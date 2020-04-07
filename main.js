@@ -73,24 +73,34 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/setLogApp", (req, res) => {
-    let timestamp = new Date().toLocaleString();
-    console.log(chalk.magenta(`[HTTP] ${timestamp} Received LOG!`));
+    try {
+        let timestamp = new Date().toLocaleString();
+        console.log(chalk.magenta(`[HTTP] ${timestamp} Received LOG!`));
+        
+        let body = JSON.stringify(req.body, 1, 2);
     
-    let body = JSON.stringify(req.body, 1, 2);
-
-    let fileName = `${uuid.v4()}.log`;    
-    let filePath = `${__dirname}/logs/${fileName}`;
+        let fileName = `${uuid.v4()}.log`;    
+        let folderPath = `${__dirname}/logs/`;
+        let filePath = `${folderPath}${fileName}`;
     
-    fs.writeFile(filePath, body, (error) => {
-        if (error) {
-            console.trace(error);
-            console.error(chalk.red("[HTTP] Error while saving logs: " + error));
-        } else {
-            console.log(chalk.magenta("[HTTP] Log saved on File " + fileName));
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath);
         }
-    });
-    
-    res.json({ message: "OK" });
+        
+        fs.writeFile(filePath, body, (error) => {
+            if (error) {
+                console.trace(error);
+                console.error(chalk.red("[HTTP] Error while saving logs: " + error));
+            } else {
+                console.log(chalk.magenta("[HTTP] Log saved on File " + fileName));
+            }
+        });
+        
+        res.json({ message: "OK" });
+    } catch (e) {
+        console.error(chalk.red(e));
+        console.trace(e);
+    }
 });
 //#endregion
 
