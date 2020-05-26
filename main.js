@@ -5,6 +5,7 @@ const fs = require("fs");
 const uuid = require("uuid");
 const localtunnel = require("localtunnel");
 const chalk = require("chalk");
+const serveIndex = require('serve-index')
 //#endregion
 
 // Localtunnel configuration
@@ -66,10 +67,22 @@ const EXPRESS_OPTIONS = {
 };
 let app = express();
 app.use(bodyParser.json({ extended: true }));
+app.use('/ftp', express.static('log files'), serveIndex('log files', {'icons': true}))
 
 //#region Express routes
 app.get("/", (req, res) => {
-    res.json({ message: "FUNFOU "});
+    res.json({ message: "Server log working flawlessly "});
+});
+
+app.get("/api/logCount", (req, res) => {
+    fs.readdir(`${__dirname}/log files/`, (error, files) => {
+        if (error) {
+            console.error(error);
+            res.json({ message: "Unable to fetch the log file count!\n" + error });
+        } else {
+            res.json({ message: `There are ${files.length} logs in the log directory!`});
+        }
+    });
 });
 
 app.post("/api/setLogApp", (req, res) => {
