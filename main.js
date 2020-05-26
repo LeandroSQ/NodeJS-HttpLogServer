@@ -67,7 +67,22 @@ const EXPRESS_OPTIONS = {
 };
 let app = express();
 app.use(bodyParser.json({ extended: true }));
-app.use('/ftp', express.static('log files'), serveIndex('log files', {'icons': true}))
+app.use(
+    '/ftp', 
+    express.static('log files'), 
+    serveIndex('log files', { 
+        "icons": true, 
+        "view": "details",
+        "sort": function (file1, file2) {
+            // sort ".." to the top
+            if (file1.name === '..' || file2.name === '..') 
+                return file1.name === file2.name ? 0 : file1.name === '..' ? -1 : 1;
+
+            // sort directories first then sort files by date of modification
+            return Number(file2.stat && file2.stat.isDirectory()) - Number(file1.stat && file1.stat.isDirectory()) || new Date(file2.stat.mtime) - new Date(file1.stat.mtime);
+        }
+    })
+);
 
 //#region Express routes
 app.get("/", (req, res) => {
